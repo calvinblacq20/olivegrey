@@ -1,0 +1,1638 @@
+/* ==========================================================================
+   Olive Grey School — Race Course, Gyedu Junction, Accra
+   Design system: editorial display face + neutral grotesque, cream/ink
+   palette, per-letter reveals, sticky pinned sections.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Tokens
+   -------------------------------------------------------------------------- */
+:root {
+  /* Palette — sampled from the school crest: a red ring on a warm grey disc.
+     The name says olive; the mark says red, and the mark wins. */
+  --ink:          #241F1F;   /* warm near-black, from the crest lettering */
+  --ink-soft:     #37302F;
+  --cream:        #F5F2F1;   /* off-white carrying the grey's warmth */
+  --clay:         #EBE5E4;
+  --paper:        #FFFFFF;
+  --brand:        #E41824;   /* the ring — carries every accent */
+  --brand-deep:   #9C1520;   /* deepened, for full-panel use */
+  --brand-deepest:#7A0F18;
+  --muted:        #786C6C;   /* the disc, sampled exactly */
+  --muted-lite:   #A79B9B;
+  --line:         rgba(36, 31, 31, 0.14);
+  --line-lite:    rgba(245, 242, 241, 0.17);
+
+  /* Type */
+  --display: "Aboreto", "Cormorant Garamond", Georgia, serif;
+  --sans: "Zalando Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  /* Fluid display scale */
+  /* Sized for "OLIVE GREY" — two more characters than the previous mark, so
+     the scale comes down to keep it on one line at 360px. */
+  --fs-mega:  clamp(2.85rem, 12.4vw, 18rem);
+  --fs-h1:    clamp(2.4rem, 6.2vw, 5.6rem);
+  --fs-h2:    clamp(1.9rem, 3.6vw, 2.75rem);
+  --fs-h3:    clamp(1.45rem, 2.3vw, 2.25rem);
+  --fs-h4:    clamp(1.1rem, 1.5vw, 1.25rem);
+  --fs-lead:  clamp(1.05rem, 1.35vw, 1.35rem);
+  --fs-body:  1rem;
+  --fs-sm:    0.875rem;
+  --fs-xs:    0.75rem;
+
+  /* Space */
+  --gut: clamp(1.25rem, 4vw, 4.5rem);
+  --sec: clamp(5rem, 11vw, 11rem);
+  --maxw: 1440px;
+
+  /* Motion */
+  --ease: cubic-bezier(0.44, 0, 0.06, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur: 0.9s;
+
+  /* Shape */
+  --r-pill: 50px;
+  --r-card: 10px;
+  --r-lg: 18px;
+}
+
+/* --------------------------------------------------------------------------
+   2. Reset & base
+   -------------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; padding: 0; }
+
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+html.is-loading { overflow: hidden; }
+
+body {
+  font-family: var(--sans);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--cream);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  font-synthesis-weight: none;
+}
+body.no-scroll { overflow: hidden; }
+
+img, svg, video { display: block; max-width: 100%; height: auto; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { background: none; border: 0; cursor: pointer; }
+a { color: inherit; text-decoration: none; }
+ul, ol { list-style: none; }
+
+h1, h2, h3, h4, h5 {
+  font-family: var(--display);
+  font-weight: 400;
+  line-height: 1.06;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+
+::selection { background: var(--ink); color: var(--cream); }
+
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 4px; border-radius: 2px; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+.skip {
+  position: absolute; top: -100px; left: var(--gut);
+  z-index: 400; background: var(--ink); color: var(--cream);
+  padding: 0.75rem 1.25rem; border-radius: var(--r-pill);
+  font-size: var(--fs-sm); transition: top 0.3s var(--ease);
+}
+.skip:focus { top: 1rem; }
+
+/* --------------------------------------------------------------------------
+   3. Layout primitives
+   -------------------------------------------------------------------------- */
+.shell {
+  width: 100%;
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--gut);
+}
+.section { padding-block: var(--sec); position: relative; }
+.section--dark { background: var(--ink); color: var(--cream); }
+.section--brand-deep { background: var(--brand-deep); color: var(--cream); }
+.section--clay { background: var(--clay); }
+
+.grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: clamp(1.25rem, 2.4vw, 2.5rem); }
+
+.eyebrow {
+  font-family: var(--sans);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+}
+.eyebrow::before { content: ""; width: 1.6em; height: 1px; background: currentColor; opacity: 0.5; }
+.section--dark .eyebrow, .section--brand-deep .eyebrow { color: var(--muted-lite); }
+
+.lead { font-size: var(--fs-lead); line-height: 1.55; color: var(--muted); max-width: 46ch; }
+.section--dark .lead, .section--brand-deep .lead { color: rgba(245, 242, 241, 0.72); }
+
+/* --------------------------------------------------------------------------
+   4. Motion utilities (the reveal engine)
+   -------------------------------------------------------------------------- */
+/* inline-block, NOT block: each wrapper holds one word, so block-level forces
+   every word onto its own row and a heading becomes a vertical column. The
+   overflow clip that lets the word slide up still works inline-block. */
+.split-line {
+  display: inline-block;
+  vertical-align: top;
+  overflow: hidden;
+  padding-bottom: 0.04em;
+}
+.split-unit {
+  display: inline-block;
+  opacity: 0.001;
+  transform: translateY(20px);
+  will-change: transform, opacity;
+}
+.is-revealed .split-unit {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity var(--dur) var(--ease) var(--d, 0s),
+    transform var(--dur) var(--ease) var(--d, 0s);
+}
+
+[data-reveal] { opacity: 0.001; transform: translateY(26px); will-change: transform, opacity; }
+[data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+  transition: opacity 1s var(--ease) var(--d, 0s), transform 1s var(--ease) var(--d, 0s);
+}
+
+[data-clip] { clip-path: inset(0 0 100% 0); will-change: clip-path; }
+[data-clip].is-revealed { clip-path: inset(0 0 0% 0); transition: clip-path 1.3s var(--ease) var(--d, 0s); }
+[data-clip] .plate-inner { transform: scale(1.16); transition: transform 1.6s var(--ease) var(--d, 0s); }
+[data-clip].is-revealed .plate-inner { transform: scale(1); }
+
+[data-draw] { transform: scaleX(0); transform-origin: left; }
+[data-draw].is-revealed { transform: scaleX(1); transition: transform 1.1s var(--ease) var(--d, 0s); }
+
+/* Scroll-linked word fill — words brighten as the block crosses the viewport */
+.fill-word {
+  display: inline-block;
+  opacity: 0.16;
+  transition: opacity 0.35s linear;
+  will-change: opacity;
+}
+
+/* Scroll progress bar */
+.progress {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 2px; z-index: 130;
+  background: transparent;
+  pointer-events: none;
+}
+.progress i {
+  display: block; height: 100%; width: 100%;
+  background: var(--brand);
+  transform: scaleX(0); transform-origin: left;
+  will-change: transform;
+}
+
+/* Active nav link */
+.nav__links a.is-current::after { transform: scaleX(1); transform-origin: left; }
+
+/* Back to top */
+.totop {
+  position: fixed; right: var(--gut); bottom: 2rem; z-index: 125;
+  width: 52px; height: 52px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--ink); color: var(--cream);
+  border: 1px solid var(--line-lite);
+  opacity: 0; transform: translateY(16px) scale(0.9);
+  pointer-events: none;
+  transition: opacity 0.5s var(--ease), transform 0.5s var(--ease), background 0.4s ease, color 0.4s ease;
+}
+.totop.is-on { opacity: 1; transform: none; pointer-events: auto; }
+.totop:hover { background: var(--brand); color: var(--ink); }
+.totop svg { width: 15px; }
+
+/* --------------------------------------------------------------------------
+   5. Preloader
+   -------------------------------------------------------------------------- */
+.preloader {
+  position: fixed; inset: 0; z-index: 200;
+  background: var(--ink); color: var(--cream);
+  display: grid; place-items: center;
+  transition: transform 1.1s var(--ease) 0.25s;
+}
+.preloader.is-done { transform: translateY(-101%); }
+.preloader__mark {
+  font-family: var(--display);
+  font-size: clamp(1.5rem, 4vw, 3rem);
+  letter-spacing: -0.04em;
+  display: flex; overflow: hidden;
+}
+.preloader__count {
+  position: absolute; right: var(--gut); bottom: clamp(2.5rem, 6vw, 4.5rem);
+  font-family: var(--display);
+  font-size: clamp(2rem, 8vw, 6rem);
+  letter-spacing: -0.05em; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.preloader__bar {
+  position: absolute; left: var(--gut); right: var(--gut);
+  bottom: clamp(1.5rem, 4vw, 3rem);
+  height: 1px; background: var(--line-lite);
+}
+.preloader__bar i { display: block; height: 100%; width: 0%; background: var(--cream); }
+
+/* --------------------------------------------------------------------------
+   6. Navigation
+   -------------------------------------------------------------------------- */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 120;
+  padding: clamp(1rem, 2vw, 1.75rem) var(--gut);
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  color: var(--cream);
+  transition: transform 0.65s var(--ease);
+}
+.nav.is-hidden { transform: translateY(-110%); }
+
+.nav__brand {
+  font-family: var(--display);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.02em;
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.nav__brand svg { width: 24px; height: 24px; flex: none; }
+
+.nav__links { display: flex; gap: clamp(1rem, 2.2vw, 2.25rem); font-size: var(--fs-sm); }
+.nav__links a { position: relative; padding-block: 2px; }
+.nav__links a::after {
+  content: ""; position: absolute; left: 0; bottom: 0;
+  width: 100%; height: 1px; background: currentColor;
+  transform: scaleX(0); transform-origin: right;
+  transition: transform 0.5s var(--ease);
+}
+.nav__links a:hover::after { transform: scaleX(1); transform-origin: left; }
+
+.nav__right { display: flex; align-items: center; gap: 0.75rem; }
+
+/* A labelled pill rather than a bare burger — it names the action. */
+.nav__toggle {
+  display: none;
+  min-height: 44px;
+  padding: 0.7rem 1.4rem;
+  border-radius: var(--r-pill);
+  background: var(--ink);
+  color: var(--cream);
+  font-size: var(--fs-sm);
+  letter-spacing: -0.01em;
+  place-items: center;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+.nav.is-open .nav__toggle { background: var(--cream); color: var(--ink); }
+
+/* Fullscreen overlay menu */
+.menu {
+  position: fixed; inset: 0; z-index: 110;
+  background: var(--ink); color: var(--cream);
+  padding: clamp(6rem, 14vw, 9rem) var(--gut) var(--gut);
+  display: grid; align-content: space-between; gap: 2rem;
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 0.9s var(--ease);
+  pointer-events: none;
+  /* On a 320x568 screen the list plus contact block runs past the fold, which
+     would strand the bottom of the menu out of reach. */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.menu.is-open { clip-path: inset(0 0 0% 0); pointer-events: auto; }
+.menu__list { display: grid; gap: clamp(0.25rem, 1vw, 0.75rem); }
+.menu__list li { overflow: hidden; }
+.menu__list a {
+  font-family: var(--display);
+  font-size: clamp(2rem, 8vw, 4.5rem);
+  letter-spacing: -0.05em; line-height: 1.1;
+  display: inline-block; transform: translateY(110%);
+  transition: transform 0.8s var(--ease) var(--d, 0s), opacity 0.4s ease;
+}
+.menu.is-open .menu__list a { transform: translateY(0); }
+.menu__list a:hover { opacity: 0.55; }
+.menu__meta {
+  display: flex; flex-wrap: wrap; gap: 1.5rem 3rem;
+  font-size: var(--fs-sm); color: var(--muted-lite);
+  border-top: 1px solid var(--line-lite); padding-top: 1.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   7. Buttons — dual-label vertical swap on hover
+   -------------------------------------------------------------------------- */
+.btn {
+  --btn-bg: var(--ink);
+  --btn-fg: var(--cream);
+  position: relative;
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  padding: 0.95rem 1.6rem;
+  border-radius: var(--r-pill);
+  background: var(--btn-bg); color: var(--btn-fg);
+  font-size: var(--fs-sm); letter-spacing: -0.01em;
+  overflow: hidden; isolation: isolate;
+  transition: background 0.5s var(--ease), color 0.5s var(--ease), border-color 0.5s var(--ease);
+  will-change: transform;
+}
+.btn__labels { display: block; position: relative; overflow: hidden; height: 1.35em; }
+.btn__labels span { display: block; height: 1.35em; line-height: 1.35em; transition: transform 0.6s var(--ease); }
+.btn:hover .btn__labels span { transform: translateY(-100%); }
+
+.btn__dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; transition: transform 0.6s var(--ease); }
+.btn:hover .btn__dot { transform: scale(2.2); }
+
+.btn--light { --btn-bg: var(--cream); --btn-fg: var(--ink); }
+.btn--brand { --btn-bg: var(--brand); --btn-fg: var(--ink); }
+.btn--ghost { --btn-bg: transparent; --btn-fg: currentColor; border: 1px solid currentColor; }
+.btn--ghost:hover { background: var(--ink); color: var(--cream); border-color: var(--ink); }
+.section--dark .btn--ghost:hover, .section--brand-deep .btn--ghost:hover,
+.hero .btn--ghost:hover, .band .btn--ghost:hover {
+  background: var(--cream); color: var(--ink); border-color: var(--cream);
+}
+
+.link {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  font-size: var(--fs-sm); padding-bottom: 3px;
+  border-bottom: 1px solid currentColor;
+}
+.link svg { width: 12px; transition: transform 0.5s var(--ease); }
+.link:hover svg { transform: translate(4px, -4px); }
+
+/* --------------------------------------------------------------------------
+   8. Media plates
+   -------------------------------------------------------------------------- */
+.plate {
+  position: relative; overflow: hidden;
+  border-radius: var(--r-card);
+  background: var(--brand-deepest);
+}
+.plate-inner { position: absolute; inset: 0; will-change: transform; }
+/* Photographs and videos sit above the illustration. If one fails to load it
+   removes itself (see images.js) and the artwork below shows through. */
+.plate-img,
+.plate-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+/* The hero and CTA bands paint their darkening gradient in ::after. Without
+   this the photo's z-index would lift it above that overlay and the white
+   text on top would become unreadable. */
+.hero__bg .plate-img,
+.band__bg .plate-img,
+.academics__pinBg .plate-img { z-index: 0; }
+/* A parallaxed layer that exactly fills its box slides its own edge into view.
+   Overscan gives the drift somewhere to travel. */
+[data-parallax] .plate-inner { top: -12%; bottom: -12%; }
+.plate-inner img, .plate-inner svg { width: 100%; height: 100%; object-fit: cover; }
+.plate--3x4 { aspect-ratio: 3 / 4; }
+.plate--4x3 { aspect-ratio: 4 / 3; }
+.plate--1x1 { aspect-ratio: 1 / 1; }
+.plate--16x9 { aspect-ratio: 16 / 9; }
+.plate--tall { aspect-ratio: 2 / 3; }
+
+/* Caption sits directly on the photograph — no chip, no blur. A shadow does
+   the legibility work the pill used to, since the photos vary in brightness. */
+.plate__caption {
+  position: absolute; left: 1.15rem; bottom: 1.1rem; right: 1.15rem; z-index: 3;
+  font-size: var(--fs-xs); letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--cream);
+  text-shadow:
+    0 1px 3px rgba(36, 31, 31, 0.9),
+    0 2px 14px rgba(36, 31, 31, 0.7);
+}
+
+.grain {
+  position: absolute; inset: 0; z-index: 2;
+  opacity: 0.38; pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+/* --------------------------------------------------------------------------
+   9. Hero
+   -------------------------------------------------------------------------- */
+/* The hero is pinned and everything after it rides over the top: the hero
+   holds still while the next section climbs over and covers it completely,
+   then ordinary scrolling resumes. Sections that pass over it must be opaque,
+   or the hero shows through. */
+main > * {
+  position: relative;
+  z-index: 1;
+  /* An opaque base is required, not cosmetic: the pinned hero sits beneath
+     every one of these, and a transparent section would show it through.
+     Section modifiers (--dark, --brand-deep, --clay) override this. */
+  background-color: var(--cream);
+}
+
+.hero {
+  position: sticky;
+  top: 0;
+  z-index: 0;
+  min-height: 100svh;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  background: var(--ink); color: var(--cream);
+  overflow: hidden;
+  padding-bottom: clamp(1.5rem, 3vw, 3rem);
+}
+.hero__bg { position: absolute; inset: 0; z-index: 0; }
+.hero__bg::after {
+  content: ""; position: absolute; inset: 0;
+  background:
+    radial-gradient(120% 80% at 72% 8%, rgba(228, 24, 36, 0.30), transparent 62%),
+    linear-gradient(180deg, rgba(36, 31, 31, 0.28) 0%, rgba(36, 31, 31, 0.70) 60%, var(--ink) 100%);
+}
+.hero__inner { position: relative; z-index: 2; width: 100%; }
+
+.hero__top {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  gap: 2rem; flex-wrap: wrap;
+  margin-bottom: clamp(2rem, 5vw, 4rem);
+}
+.hero__statement {
+  font-family: var(--sans);
+  font-size: var(--fs-lead);
+  line-height: 1.5; max-width: 40ch; letter-spacing: -0.01em;
+}
+.hero__tag {
+  font-size: var(--fs-sm);
+  color: rgba(245, 242, 241, 0.7);
+  max-width: 26ch; text-align: right;
+}
+
+.hero__wordmark {
+  font-size: var(--fs-mega);
+  line-height: 0.82;
+  letter-spacing: -0.05em;
+  text-align: center; white-space: nowrap;
+  display: flex; justify-content: center;
+  color: var(--cream);
+}
+
+.hero__scroll {
+  position: absolute; left: 50%;
+  bottom: clamp(8rem, 17vw, 12rem);
+  transform: translateX(-50%);
+  z-index: 3;
+  display: grid; justify-items: center; gap: 0.6rem;
+  font-size: var(--fs-xs); letter-spacing: 0.2em; text-transform: uppercase;
+  color: rgba(245, 242, 241, 0.6);
+}
+.hero__scroll i { width: 1px; height: 42px; background: linear-gradient(var(--cream), transparent); animation: drop 2.4s var(--ease) infinite; }
+@keyframes drop {
+  0%   { transform: scaleY(0); transform-origin: top; }
+  45%  { transform: scaleY(1); transform-origin: top; }
+  55%  { transform: scaleY(1); transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}
+
+/* --------------------------------------------------------------------------
+   10. Statement panel
+   -------------------------------------------------------------------------- */
+.statement { padding-block: clamp(6rem, 14vw, 12rem); }
+.statement__text {
+  grid-column: span 8;
+  font-family: var(--display);
+  font-size: clamp(1.5rem, 3.3vw, 2.9rem);
+  line-height: 1.28; letter-spacing: -0.035em;
+}
+.statement__aside {
+  grid-column: span 4; align-self: end;
+  font-size: var(--fs-sm);
+  color: rgba(245, 242, 241, 0.68);
+  display: grid; gap: 1.25rem;
+}
+
+/* --------------------------------------------------------------------------
+   11. Sticky stacked cards
+   -------------------------------------------------------------------------- */
+.stack__head { margin-bottom: clamp(2rem, 5vw, 4rem); display: grid; gap: 1rem; }
+.stack__item { position: sticky; top: clamp(5rem, 12vh, 9rem); will-change: transform; }
+.stack__item + .stack__item { margin-top: clamp(1.5rem, 3vw, 2.5rem); }
+.stack__card {
+  background: var(--paper);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+  padding: clamp(1.5rem, 3vw, 3rem);
+  display: grid; grid-template-columns: 1.1fr 1fr;
+  gap: clamp(1.5rem, 3vw, 3.5rem);
+  align-items: center;
+  min-height: clamp(320px, 46vh, 460px);
+  box-shadow: 0 30px 60px -40px rgba(36, 31, 31, 0.35);
+}
+/* Same descending rhythm on desktop, at a gentler scale. The mobile block
+   later in the file overrides these on narrow screens. */
+.stack__item:nth-of-type(1) .stack__card { min-height: clamp(340px, 52vh, 520px); }
+.stack__item:nth-of-type(2) .stack__card { min-height: clamp(310px, 46vh, 460px); }
+.stack__item:nth-of-type(3) .stack__card { min-height: clamp(280px, 40vh, 400px); }
+
+.stack__body { display: grid; gap: 1.1rem; align-content: center; }
+.stack__index { font-family: var(--display); font-size: var(--fs-sm); color: var(--brand); letter-spacing: 0.06em; }
+.stack__title { font-size: var(--fs-h2); }
+.stack__list { display: grid; gap: 0.55rem; font-size: var(--fs-sm); color: var(--muted); }
+.stack__list li { display: flex; gap: 0.6rem; }
+.stack__list li::before { content: "—"; color: var(--brand); flex: none; }
+
+/* --------------------------------------------------------------------------
+   12. CTA band
+   -------------------------------------------------------------------------- */
+.band {
+  position: relative; min-height: 92svh;
+  display: grid; place-items: center; text-align: center;
+  color: var(--cream); overflow: hidden;
+  padding: var(--sec) var(--gut);
+}
+.band__bg { position: absolute; inset: 0; z-index: 0; }
+.band__bg::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(36, 31, 31, 0.52), rgba(36, 31, 31, 0.80));
+}
+.band__inner { position: relative; z-index: 2; display: grid; gap: 1.75rem; justify-items: center; }
+.band__title { font-size: var(--fs-h1); max-width: 18ch; line-height: 1.05; }
+.band__sub { max-width: 54ch; color: rgba(245, 242, 241, 0.72); font-size: var(--fs-sm); line-height: 1.6; }
+
+/* --------------------------------------------------------------------------
+   13. Feature split
+   -------------------------------------------------------------------------- */
+.feature { display: grid; grid-template-columns: repeat(12, 1fr); gap: clamp(1.5rem, 3vw, 3rem); align-items: center; }
+.feature + .feature { margin-top: var(--sec); }
+.feature__media { grid-column: span 6; }
+.feature__body { grid-column: 8 / span 5; display: grid; gap: 1.4rem; }
+.feature--flip .feature__media { grid-column: 7 / span 6; order: 2; }
+.feature--flip .feature__body { grid-column: 1 / span 5; order: 1; }
+.feature__title { font-size: var(--fs-h2); max-width: 16ch; }
+.feature__note { font-size: var(--fs-xs); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+
+/* --------------------------------------------------------------------------
+   14. Academics — pinned header + tabs
+   -------------------------------------------------------------------------- */
+.academics {
+  background: var(--paper);
+  position: relative;
+  overflow: hidden;                 /* the strip runs past both edges */
+  padding-top: clamp(3rem, 8vw, 7rem);
+}
+.academics .bigstate { margin-top: clamp(1.5rem, 4vw, 2.5rem); }
+
+.tabs {
+  position: relative;
+  background: var(--paper);
+  padding-block: clamp(2.5rem, 6vw, 5rem);
+}
+.tabs__nav {
+  display: flex; gap: 0.4rem;
+  /* One row that scrolls sideways — wrapping put these on four stacked rows
+     on a phone, which reads as a list rather than a set of tabs. */
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted-lite) transparent;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 1rem;
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+  -webkit-overflow-scrolling: touch;
+}
+.tabs__nav::-webkit-scrollbar { height: 4px; }
+.tabs__nav::-webkit-scrollbar-track { background: var(--line); border-radius: 2px; }
+.tabs__nav::-webkit-scrollbar-thumb { background: var(--muted-lite); border-radius: 2px; }
+
+.tabs__btn {
+  padding: 0.6rem 1.15rem;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-sm); color: var(--muted);
+  white-space: nowrap;
+  flex: none;
+  transition: color 0.4s ease, background 0.4s ease;
+}
+.tabs__btn:hover { color: var(--ink); }
+.tabs__btn.is-active { color: var(--cream); background: var(--ink); }
+
+.tabs__panel { display: none; }
+.tabs__panel.is-active { display: block; }
+
+.course {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.6fr) auto;
+  gap: clamp(1rem, 3vw, 3rem);
+  align-items: start;
+  padding-block: clamp(1.5rem, 3vw, 2.25rem);
+  border-top: 1px solid var(--line);
+  opacity: 0.001; transform: translateY(24px);
+}
+.course.is-in {
+  opacity: 1; transform: none;
+  transition: opacity 0.8s var(--ease) var(--d, 0s), transform 0.8s var(--ease) var(--d, 0s);
+}
+.course:last-child { border-bottom: 1px solid var(--line); }
+.course__name { font-family: var(--display); font-size: var(--fs-h4); letter-spacing: -0.03em; transition: color 0.4s ease; }
+.course__desc { font-size: var(--fs-sm); color: var(--muted); line-height: 1.6; max-width: 62ch; }
+.course__meta { font-family: var(--display); font-size: var(--fs-h4); color: var(--brand); white-space: nowrap; letter-spacing: -0.02em; }
+.course:hover .course__name { color: var(--brand); }
+
+/* --------------------------------------------------------------------------
+   15. Campus rail
+   -------------------------------------------------------------------------- */
+.rail__head {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  gap: 2rem; flex-wrap: wrap;
+  margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+}
+.rail__track {
+  display: flex; gap: clamp(0.75rem, 1.5vw, 1.25rem);
+  overflow-x: auto;
+  /* Proximity, not mandatory: the scroll-linked drift sets scrollLeft directly,
+     and a mandatory snap pulls back against it every frame. */
+  scroll-snap-type: x proximity;
+  padding-inline: var(--gut); padding-bottom: 1rem;
+  scrollbar-width: none; cursor: grab;
+}
+.rail__track::-webkit-scrollbar { display: none; }
+.rail__track.is-dragging { cursor: grabbing; scroll-snap-type: none; }
+/* Snap is also off while the page scroll is driving the rail. */
+.rail__track.is-auto { scroll-snap-type: none; }
+.rail__item { flex: 0 0 clamp(240px, 26vw, 380px); scroll-snap-align: start; display: grid; gap: 0.85rem; }
+.rail__item h3 { font-size: var(--fs-h4); }
+.rail__item p { font-size: var(--fs-sm); color: var(--muted); line-height: 1.55; }
+
+/* --------------------------------------------------------------------------
+   16. Marquee
+   -------------------------------------------------------------------------- */
+.marquee {
+  overflow: hidden;
+  border-block: 1px solid var(--line);
+  padding-block: clamp(1rem, 2vw, 1.75rem);
+  display: flex; user-select: none;
+}
+.section--dark .marquee, .marquee--dark { border-color: var(--line-lite); }
+.marquee__row {
+  display: flex; gap: clamp(1.5rem, 3vw, 3rem);
+  padding-right: clamp(1.5rem, 3vw, 3rem);
+  flex: none; min-width: 100%;
+  will-change: transform;
+}
+.marquee__row span {
+  font-family: var(--display);
+  font-size: clamp(1.4rem, 3.4vw, 2.75rem);
+  letter-spacing: -0.04em;
+  display: flex; align-items: center; gap: clamp(1.5rem, 3vw, 3rem);
+  white-space: nowrap;
+}
+.marquee__row span::after { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--brand); flex: none; }
+/* The marquee is driven by a transform loop in main.js rather than a CSS
+   animation: scroll velocity has to change its speed and direction every frame,
+   and mutating animation-duration/-direction restarts the animation each time,
+   which reads as a stutter. */
+
+/* --------------------------------------------------------------------------
+   16b. Wordstrip — oversized display type running horizontally, driven by
+   scroll position. Deliberately wider than the viewport so the letters are
+   cropped at both edges.
+   -------------------------------------------------------------------------- */
+.wordstrip {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  width: 100%;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.wordstrip__inner {
+  display: flex;
+  flex: none;
+  will-change: transform;
+}
+.wordstrip__unit {
+  font-family: var(--display);
+  font-size: clamp(5rem, 34vw, 26rem);
+  line-height: 0.86;
+  letter-spacing: -0.05em;
+  white-space: nowrap;
+  flex: none;
+  padding-right: 0.12em;
+  display: flex;
+  align-items: center;
+  gap: 0.16em;
+}
+.wordstrip__unit svg {
+  width: 0.42em;
+  height: 0.42em;
+  flex: none;
+  color: var(--brand);
+}
+
+.wordstrip--section {
+  color: var(--ink);
+  padding-block: clamp(0.5rem, 2vw, 1.5rem);
+}
+.wordstrip--footer {
+  color: var(--cream);
+  opacity: 0.96;
+  padding-bottom: 0.06em;
+}
+
+/* The statement that sits under the strip and holds still while it travels */
+.bigstate { display: grid; gap: 1.25rem; }
+.bigstate__eyebrow { font-size: var(--fs-sm); color: var(--muted); max-width: 40ch; }
+.bigstate__text {
+  font-family: var(--display);
+  font-size: clamp(1.5rem, 5.2vw, 3.1rem);
+  line-height: 1.16;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+  max-width: 24ch;
+}
+
+/* --------------------------------------------------------------------------
+   16c. Newsletter
+   -------------------------------------------------------------------------- */
+.news { display: grid; gap: 1rem; max-width: 420px; }
+.news h4 {
+  font-family: var(--sans);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted-lite);
+}
+
+/* --------------------------------------------------------------------------
+   16d. 3D card carousel
+   A continuous cylinder of cards. Each card is five stacked slices a fraction
+   of a pixel apart, which reads as real volumetric thickness rather than a
+   flat plane. Positions are written by assets/js/cards.js every frame.
+   -------------------------------------------------------------------------- */
+.cards {
+  position: relative;
+  min-height: 0;
+  padding-block: clamp(2.5rem, 6vw, 4.5rem);
+  /* Not flat white — a warm centre keeps the cards from floating in a void,
+     and gives the section the same lit quality as the rest of the page. */
+  background:
+    radial-gradient(78% 52% at 50% 48%, rgba(228, 24, 36, 0.09), transparent 72%),
+    linear-gradient(180deg, var(--paper) 0%, #FAF7F1 50%, var(--paper) 100%);
+  color: var(--ink);
+  overflow: hidden;
+  /* Header, carousel and footnote in flow, so nothing can collide */
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: clamp(1.25rem, 3vw, 2.25rem);
+}
+
+/* The oversized word behind everything */
+.cards__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.cards__bg span {
+  font-family: var(--display);
+  font-size: clamp(5rem, 27vw, 24rem);
+  line-height: 1;
+  letter-spacing: -0.06em;
+  white-space: nowrap;
+  color: rgba(36, 31, 31, 0.06);
+}
+
+.cards__head,
+.cards__foot { position: relative; z-index: 2; }
+
+.cards__head { display: grid; gap: 0.9rem; justify-items: start; }
+.cards__title {
+  font-size: clamp(1.6rem, 3.4vw, 2.6rem);
+  max-width: 18ch;
+}
+
+.cards__foot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+.cards__foot p {
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  max-width: 34ch;
+  line-height: 1.55;
+}
+.cards__stage {
+  position: relative;
+  z-index: 1;                 /* above the background word, below the copy */
+  width: 100%;
+  height: clamp(600px, 82svh, 860px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1350px;
+  pointer-events: none;
+  /* Cards deliberately travel past the stage edge before disappearing, so
+     without clipping they reach into the header and footnote rows and the
+     copy — which sits above them — prints straight across the artwork.
+     The carousel already treats this box as its boundary (layout() measures
+     stage.clientHeight), so clipping here matches its own maths. */
+  overflow: hidden;
+}
+.cards__viewport {
+  position: absolute;
+  transform-style: preserve-3d;
+}
+
+.card3d {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  backface-visibility: visible;
+  will-change: transform;
+}
+.card3d__layer {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  pointer-events: none;
+}
+/* Structural middle slices — the visible "edge" of the card. Brass rather
+   than silver, so the thickness reads as the site's gold and not bank metal. */
+.card3d__mid {
+  background: #786C6C;
+  border: 1px solid #786C6C;
+}
+.card3d__face {
+  background: var(--ink-soft);
+  border: 1px solid rgba(245, 242, 241, 0.22);
+  backface-visibility: hidden;
+  /* A cast shadow lifts the card off the white ground, plus a crisp rim light
+     along the top edge so the silhouette reads sharply. Shadow lives on the
+     face, not on .card3d — a filter there would collapse preserve-3d. */
+  box-shadow:
+    0 30px 60px -24px rgba(36, 31, 31, 0.55),
+    0 8px 18px -10px rgba(36, 31, 31, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.28);
+}
+.card3d__art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  /* Lift the artwork out of the murk — the scenes are deliberately soft and
+     grainy at full size, which reads as dull at card scale. */
+  filter: saturate(1.1) contrast(1.04) brightness(1.04);
+}
+/* Clear through the top two-thirds, darkening only where the label sits, so
+   the art stays legible instead of being flattened by an overall wash. */
+.card3d__tint {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(36, 31, 31, 0) 0%,
+    rgba(36, 31, 31, 0) 55%,
+    rgba(36, 31, 31, 0.26) 78%,
+    rgba(36, 31, 31, 0.60) 100%
+  );
+}
+
+/* Front face furniture */
+.card3d__mark {
+  position: absolute;
+  left: 1.1rem;
+  top: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.card3d__mark svg {
+  width: 17px; height: 17px; flex: none;
+  color: var(--brand);
+  filter: drop-shadow(0 1px 4px rgba(36, 31, 31, 0.7));
+}
+.card3d__mark span {
+  font-family: var(--display);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--cream);
+  text-shadow: 0 1px 6px rgba(36, 31, 31, 0.7);
+}
+.card3d__label {
+  position: absolute;
+  left: 1.1rem;
+  right: 1.1rem;
+  bottom: 0.95rem;
+  font-family: var(--display);
+  font-size: clamp(0.95rem, 1.5vw, 1.2rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--cream);
+  text-shadow: 0 1px 8px rgba(36, 31, 31, 0.55);
+}
+/* No founding date on the card front: at ~190px wide there is no corner it
+   can sit in without running into either the mark or the label. It already
+   appears in the footer. */
+
+/* Back face furniture */
+.card3d__blur {
+  position: absolute;
+  inset: 0;
+  /* No blur. The point of the back face is the photograph; a scrim below
+     carries the text contrast instead. */
+  filter: saturate(1.06);
+  transform: scale(1.02);
+  pointer-events: none;
+  opacity: 1;
+}
+/* Scrim behind the back-face text, so the photo stays sharp and the words
+   stay readable. */
+.card3d__face .card3d__details::before {
+  content: "";
+  position: absolute;
+  left: -1.1rem; right: -1.1rem; bottom: -1rem;
+  height: calc(100% + 2.6rem);
+  background: linear-gradient(180deg, rgba(36,31,31,0) 0%, rgba(36,31,31,.86) 60%);
+  z-index: -1;
+}
+/* A woven band in place of a magnetic stripe */
+.card3d__band {
+  position: absolute;
+  left: 0; right: 0;
+  top: 0.9rem;
+  height: 26px;
+  z-index: 10;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--brand) 0 14px,
+    #2C3A27 14px 24px,
+    var(--cream) 24px 28px,
+    #7A2E1E 28px 40px
+  );
+  opacity: 0.9;
+}
+.card3d__details {
+  position: absolute;
+  left: 1.1rem;
+  right: 1.1rem;
+  bottom: 1rem;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+.card3d__fact {
+  font-family: var(--display);
+  font-size: clamp(0.85rem, 1.3vw, 1.05rem);
+  letter-spacing: -0.02em;
+  color: var(--cream);
+}
+.card3d__meta {
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(245, 242, 241, 0.62);
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.card3d__meta i { font-style: normal; color: var(--brand); }
+
+/* On a phone the carousel does not need a near-full screen: the cards are
+   small there, so a tall stage is mostly empty ink. */
+@media (max-width: 760px) {
+  .cards { padding-block: clamp(1.75rem, 5vw, 2.75rem); }
+  .cards__stage { height: clamp(460px, 68svh, 640px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card3d { transition: none; }
+}
+
+/* Category labels, so each card says what it is */
+.card3d__kind {
+  position: absolute;
+  left: 1.1rem;
+  bottom: 2.6rem;
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--brand);
+  text-shadow: 0 1px 6px rgba(36, 31, 31, 0.9);
+}
+.card3d__cat {
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin-bottom: 2px;
+}
+.card3d__details { position: relative; }
+
+/* --------------------------------------------------------------------------
+   17. Pillars grid
+   -------------------------------------------------------------------------- */
+.pillars { display: grid; grid-template-columns: repeat(4, 1fr); gap: clamp(1rem, 2vw, 2rem); }
+.pillar { display: grid; gap: 0.9rem; padding-top: 1.5rem; border-top: 1px solid var(--line); align-content: start; }
+.pillar__icon { width: 44px; height: 44px; color: var(--brand); }
+.pillar__label { font-size: var(--fs-xs); letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+.pillar h3 { font-size: var(--fs-h4); line-height: 1.2; }
+.pillar p { font-size: var(--fs-sm); color: var(--muted); line-height: 1.6; }
+
+/* --------------------------------------------------------------------------
+   18. Stats
+   -------------------------------------------------------------------------- */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: clamp(1rem, 2vw, 2rem); }
+.stat { display: grid; gap: 0.5rem; padding-top: 1.25rem; border-top: 1px solid var(--line-lite); align-content: start; }
+.stat__num {
+  font-family: var(--display);
+  font-size: clamp(2.4rem, 5.4vw, 4.5rem);
+  line-height: 1; letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+}
+.stat__label { font-size: var(--fs-sm); color: rgba(245, 242, 241, 0.62); max-width: 24ch; line-height: 1.5; }
+
+/* --------------------------------------------------------------------------
+   19. Contact
+   -------------------------------------------------------------------------- */
+.contact { display: grid; grid-template-columns: repeat(12, 1fr); gap: clamp(1.5rem, 3vw, 3rem); }
+.contact__head { grid-column: span 12; margin-bottom: clamp(1rem, 3vw, 2.5rem); display: grid; gap: 1.25rem; }
+.contact__title { font-size: var(--fs-h1); max-width: 14ch; }
+.contact__info { grid-column: span 5; display: grid; gap: clamp(1.25rem, 2.5vw, 2rem); align-content: start; }
+.contact__form { grid-column: 7 / span 6; display: grid; gap: 1rem; align-content: start; }
+
+.info { display: grid; gap: 0.4rem; padding-top: 1rem; border-top: 1px solid var(--line-lite); }
+.info dt { font-size: var(--fs-xs); letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted-lite); }
+.info dd { font-size: var(--fs-lead); letter-spacing: -0.015em; line-height: 1.4; }
+.info dd a { transition: color 0.3s ease; }
+.info dd a:hover { color: var(--brand); }
+
+.field { position: relative; display: grid; gap: 0.4rem; }
+.field label { font-size: var(--fs-xs); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted-lite); }
+.field input, .field textarea, .field select {
+  background: transparent; border: 0;
+  border-bottom: 1px solid var(--line-lite);
+  padding: 0.75rem 0; color: var(--cream);
+  font-size: var(--fs-body);
+  transition: border-color 0.4s ease;
+  border-radius: 0;
+}
+.field textarea { resize: vertical; min-height: 90px; }
+.field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--brand); }
+.field input::placeholder, .field textarea::placeholder { color: rgba(245, 242, 241, 0.32); }
+.field select option { background: var(--ink); color: var(--cream); }
+.field--row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+.form__foot { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: 0.75rem; }
+.form__note { font-size: var(--fs-xs); color: var(--muted-lite); max-width: 36ch; line-height: 1.5; }
+.form__status { font-size: var(--fs-sm); color: var(--brand); min-height: 1.4em; }
+
+/* --------------------------------------------------------------------------
+   20. Footer
+   -------------------------------------------------------------------------- */
+.footer { background: var(--ink); color: var(--cream); padding-top: clamp(3rem, 6vw, 5rem); overflow: hidden; }
+.footer__grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: clamp(1.5rem, 3vw, 3rem); padding-bottom: clamp(3rem, 6vw, 5rem); }
+.footer__col { grid-column: span 3; display: grid; gap: 0.6rem; align-content: start; }
+.footer__col h4 { font-family: var(--sans); font-size: var(--fs-xs); letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted-lite); margin-bottom: 0.4rem; }
+.footer__col a, .footer__col p { font-size: var(--fs-sm); color: rgba(245, 242, 241, 0.78); transition: color 0.3s ease; }
+.footer__col a:hover { color: var(--brand); }
+
+/* The footer wordmark is a wordstrip (see 16b) rather than a centred line, so
+   it travels sideways with the scroll and crops at both edges. */
+.footer__base {
+  border-top: 1px solid var(--line-lite);
+  padding-block: 1.5rem;
+  display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+  font-size: var(--fs-xs); color: var(--muted-lite);
+}
+.footer__base a:hover { color: var(--brand); }
+
+/* --------------------------------------------------------------------------
+   21. Cursor
+   -------------------------------------------------------------------------- */
+.cursor {
+  position: fixed; top: 0; left: 0;
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 1px solid var(--brand);
+  pointer-events: none; z-index: 300;
+  transform: translate(-50%, -50%);
+  transition: width 0.35s var(--ease), height 0.35s var(--ease), background 0.35s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+.cursor.is-active { opacity: 1; }
+.cursor.is-hover { width: 62px; height: 62px; background: rgba(228, 24, 36, 0.16); }
+@media (hover: none), (pointer: coarse) { .cursor { display: none; } }
+
+/* --------------------------------------------------------------------------
+   22. Responsive
+   -------------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+  /* Cards run edge to edge and keep stacking. Going full-bleed buys back the
+     gutters, and the trimmed media and type below keep each card short enough
+     to pin without its bottom being cut off. */
+  .stack { margin-inline: calc(var(--gut) * -1); }
+  .stack__item { position: sticky; top: 4rem; }
+  .stack__item + .stack__item { margin-top: clamp(0.75rem, 2vw, 1.25rem); }
+
+  .stack__card {
+    grid-template-columns: 1fr;
+    min-height: 0;
+    border-radius: 0;
+    border-inline: 0;
+    padding: 1.1rem var(--gut) 1.4rem;
+    gap: 1rem;
+    box-shadow: 0 -18px 40px -30px rgba(36, 31, 31, 0.5);
+  }
+  .stack__body { gap: 0.7rem; }
+  .stack__title { font-size: clamp(1.45rem, 5.6vw, 2rem); }
+  .stack__list { gap: 0.35rem; }
+
+  /* Media spans the full card width and sits as a strip */
+  .stack__media { order: -1; margin: -1.1rem calc(var(--gut) * -1) 0; }
+  .stack__media .plate { border-radius: 0; aspect-ratio: 22 / 9; }
+
+  /* Cards step down in length: first longest, second shorter, third shortest.
+     Two levers, because one is not enough across screen sizes —
+     the svh minimum adds real length on tall phones, while the media strip
+     differentiates them on short ones where the copy alone already fills the
+     card and a minimum would have no effect. Ceilings keep every card inside
+     the sticky budget (viewport minus the 4rem offset) so none of them clip. */
+  .stack__item:nth-of-type(1) .stack__card { min-height: min(90svh, 100svh - 5rem); }
+  .stack__item:nth-of-type(2) .stack__card { min-height: min(81svh, 100svh - 5rem); }
+  .stack__item:nth-of-type(3) .stack__card { min-height: min(72svh, 100svh - 5rem); }
+
+  /* Taller media strips, so the extra card height reads as image rather than
+     empty space under the copy. */
+  .stack__item:nth-of-type(1) .stack__media .plate { aspect-ratio: 15 / 9; }
+  .stack__item:nth-of-type(2) .stack__media .plate { aspect-ratio: 19 / 9; }
+  .stack__item:nth-of-type(3) .stack__media .plate { aspect-ratio: 26 / 9; }
+
+  /* Feature blocks run edge to edge too */
+  .feature__media { margin-inline: calc(var(--gut) * -1); }
+  .feature__media .plate { border-radius: 0; }
+
+  .pillars { grid-template-columns: repeat(2, 1fr); }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .feature__media, .feature--flip .feature__media { grid-column: span 12; order: 0; }
+  .feature__body, .feature--flip .feature__body { grid-column: span 12; }
+  .contact__info, .contact__form { grid-column: span 12; }
+  .footer__col { grid-column: span 6; }
+  .statement__text, .statement__aside { grid-column: span 12; }
+}
+
+/* Short screens (a 640px-tall phone) leave the first card only a pixel or two
+   of headroom, where one extra wrapped line would clip it. Shallower media
+   strips buy back the margin while keeping the same descending order. */
+@media (max-width: 1024px) and (max-height: 720px) {
+  /* A shorter ceiling as well as shallower strips: on a 640px screen the copy
+     alone nearly fills the sticky budget, so both levers have to give way or
+     the first card ends up a pixel from clipping. */
+  .stack__item:nth-of-type(1) .stack__card { min-height: min(90svh, 100svh - 7rem); }
+  .stack__item:nth-of-type(2) .stack__card { min-height: min(81svh, 100svh - 7rem); }
+  .stack__item:nth-of-type(3) .stack__card { min-height: min(72svh, 100svh - 7rem); }
+
+  .stack__item:nth-of-type(1) .stack__media .plate { aspect-ratio: 21 / 9; }
+  .stack__item:nth-of-type(2) .stack__media .plate { aspect-ratio: 25 / 9; }
+  .stack__item:nth-of-type(3) .stack__media .plate { aspect-ratio: 34 / 9; }
+}
+
+@media (max-width: 760px) {
+  .nav__links { display: none; }
+  .nav__toggle { display: grid; }
+  .nav .btn { display: none; }
+  .hero__top { flex-direction: column; align-items: flex-start; }
+  .hero__tag { text-align: left; }
+  .hero__scroll { display: none; }
+  .course { grid-template-columns: 1fr; gap: 0.5rem; }
+  .course__meta { justify-self: start; }
+  .field--row { grid-template-columns: 1fr; }
+  .pillars, .stats { grid-template-columns: 1fr; }
+  .footer__col { grid-column: span 12; }
+}
+
+/* --------------------------------------------------------------------------
+   22b. Touch targets
+   Text links default to their line-height, which lands around 20–35px — below
+   the 44px a fingertip needs. Pad them out wherever the pointer is coarse.
+   -------------------------------------------------------------------------- */
+@media (pointer: coarse), (max-width: 1024px) {
+  .nav__brand,
+  .nav__links a,
+  .info dd a,
+  .footer__col a,
+  .footer__base a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .link {
+    min-height: 44px;
+    align-items: center;
+    padding-bottom: 0;
+  }
+
+  .menu__list a {
+    padding-block: 0.35em;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .tabs__btn { padding: 0.85rem 1.25rem; }
+
+  /* The footer link columns get roomy rather than cramped once each row is 44px */
+  .footer__col { gap: 0.25rem; }
+}
+
+/* Short viewports: the hero statement was landing within a few pixels of the
+   wordmark on 640px-tall phones. */
+@media (max-height: 700px) {
+  .hero__top { margin-bottom: clamp(1rem, 3vw, 1.75rem); }
+  .hero__statement { font-size: var(--fs-body); }
+
+  /* Give the overlay menu back the room its padding was taking */
+  .menu { padding-top: clamp(4.5rem, 12vh, 6rem); gap: 1.25rem; }
+  .menu__list a { font-size: clamp(1.5rem, 6.5vw, 2.75rem); }
+  .menu__meta { gap: 0.5rem 1.5rem; padding-top: 1rem; }
+}
+
+/* --------------------------------------------------------------------------
+   23. Reduced motion
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .split-unit, [data-reveal], .course { opacity: 1 !important; transform: none !important; }
+  [data-clip] { clip-path: none !important; }
+  [data-clip] .plate-inner { transform: none !important; }
+  [data-draw] { transform: none !important; }
+  .menu__list a { transform: none; }
+  .preloader { display: none; }
+}
+
+/* Photograph layered over each card's illustration (see images.js) */
+.card3d__photo { object-fit: cover; z-index: 1; }
+
+/* --------------------------------------------------------------------------
+   24. School crest
+   -------------------------------------------------------------------------- */
+.nav__mark {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  object-fit: contain;
+  /* The crest is dark-on-transparent; on the dark hero it needs lifting */
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.45));
+}
+/* The logo artwork already has WHITE lettering — it was drawn for a dark
+   ground. It needs no plate and no filter; both were me solving a problem the
+   file did not have. Inverting it turned the crest's red ring cyan, and the
+   white plate boxed it in. */
+.footer__logo {
+  display: block;
+  width: clamp(220px, 34vw, 380px);
+  height: auto;
+}
+
+/* --------------------------------------------------------------------------
+   25. Accreditation strip
+   Four bodies, looped by the marquee machinery so the row never runs out.
+   -------------------------------------------------------------------------- */
+.orgs {
+  background: var(--paper);
+  padding-block: clamp(1.75rem, 4vw, 2.75rem);
+  border-block: 1px solid var(--line);
+}
+.orgs__label {
+  font-size: var(--fs-xs);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: clamp(1rem, 2.5vw, 1.5rem);
+}
+.marquee--orgs { border: 0; padding-block: 0; }
+.marquee--orgs .marquee__row {
+  gap: clamp(2.5rem, 6vw, 5rem);
+  padding-right: clamp(2.5rem, 6vw, 5rem);
+  align-items: center;
+}
+.org { display: flex; align-items: center; flex: none; }
+.org img {
+  height: clamp(38px, 6vw, 56px);
+  width: auto;
+  /* The badges are full colour on white; muted slightly so they read as
+     credentials rather than competing with the school's own red. */
+  opacity: 0.82;
+  transition: opacity 0.4s var(--ease);
+}
+.marquee--orgs:hover .org img { opacity: 1; }
+
+/* --------------------------------------------------------------------------
+   26. Prize-giving gallery
+   The source photographs are portrait (1024x1536), so cells are given the
+   height to hold them rather than cropping every face out.
+   -------------------------------------------------------------------------- */
+.gallery { background: var(--clay); }
+.gallery__head { display: grid; gap: 1rem; margin-bottom: clamp(2rem, 5vw, 3.5rem); }
+
+.gallery__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: clamp(130px, 15vw, 210px);
+  gap: clamp(0.5rem, 1.2vw, 1rem);
+}
+.gallery__item {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--r-card);
+  background: var(--muted);
+  grid-row: span 2;
+  margin: 0;
+}
+.gallery__item--tall { grid-row: span 3; }
+/* No landscape cells: every source photograph is portrait, and a wide cell
+   crops it straight through the faces. Variety comes from height instead. */
+.gallery__item .plate-inner { position: absolute; inset: 0; }
+.gallery__item .plate-img {
+  transition: transform 0.9s var(--ease);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .gallery__item:hover .plate-img { transform: scale(1.05); }
+}
+
+@media (max-width: 900px) {
+  .gallery__grid { grid-template-columns: repeat(2, 1fr); }
+}
+/* Below this the masonry gets too cramped to read — two narrow columns of
+   portrait photos with uneven baselines. It becomes a swipeable row of cards
+   instead: one photograph at a time, at a size worth looking at. */
+@media (max-width: 760px) {
+  .gallery__grid {
+    display: flex;
+    grid-template-columns: none;
+    grid-auto-rows: auto;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 0.75rem;
+    padding-bottom: 0.5rem;
+    /* bleed to the screen edges so the next card peeks */
+    margin-inline: calc(var(--gut) * -1);
+    padding-inline: var(--gut);
+  }
+  .gallery__grid::-webkit-scrollbar { display: none; }
+
+  .gallery__item,
+  .gallery__item--tall {
+    flex: 0 0 76%;
+    grid-row: auto;
+    scroll-snap-align: center;
+    aspect-ratio: 3 / 4;
+    border-radius: var(--r-lg);
+    box-shadow: 0 18px 40px -22px rgba(36, 31, 31, 0.55);
+  }
+
+  /* Cards settle as they reach the centre of the strip */
+  @media (prefers-reduced-motion: no-preference) {
+    .gallery__item {
+      transform: scale(0.94);
+      opacity: 0.72;
+      transition: transform 0.5s var(--ease), opacity 0.5s var(--ease);
+    }
+    .gallery__item.is-centred { transform: scale(1); opacity: 1; }
+  }
+}
+
+/* --------------------------------------------------------------------------
+   27. Preloader crest
+   -------------------------------------------------------------------------- */
+.preloader__brand {
+  display: grid;
+  justify-items: center;
+  gap: clamp(0.9rem, 2.5vw, 1.4rem);
+}
+.preloader__crest {
+  width: clamp(64px, 16vw, 104px);
+  height: auto;
+  opacity: 0;
+  transform: scale(0.9);
+  animation: crestIn 0.9s var(--ease) 0.1s forwards;
+}
+@keyframes crestIn {
+  to { opacity: 1; transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .preloader__crest { opacity: 1; transform: none; animation: none; }
+}
+
+/* --------------------------------------------------------------------------
+   28. Carousel side label
+   The club names were small and printed on the cards themselves, so they read
+   as decoration. Pulled out beside the carousel they become the point: the
+   name changes as each club reaches the front.
+   -------------------------------------------------------------------------- */
+.cards__stagewrap { position: relative; }
+
+.cards__now {
+  position: absolute;
+  z-index: 2;
+  left: var(--gut);
+  top: 50%;
+  transform: translateY(-50%);
+  max-width: 15ch;
+  pointer-events: none;
+}
+.cards__nowKind,
+.cards__nowName,
+.cards__nowFact {
+  opacity: 0;
+  transform: translateY(14px);
+}
+.cards__nowKind.is-in,
+.cards__nowName.is-in,
+.cards__nowFact.is-in {
+  opacity: 1;
+  transform: none;
+  transition: opacity .6s var(--ease), transform .6s var(--ease);
+}
+.cards__nowName.is-in { transition-delay: .06s; }
+.cards__nowFact.is-in { transition-delay: .12s; }
+
+.cards__nowKind {
+  font-size: var(--fs-xs);
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin-bottom: .5rem;
+}
+.cards__nowName {
+  font-family: var(--display);
+  font-size: clamp(2rem, 5.2vw, 3.6rem);
+  line-height: 1.02;
+  letter-spacing: -.04em;
+  color: var(--ink);
+}
+.cards__nowFact {
+  margin-top: .65rem;
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* On a phone there is no room beside the carousel, so the label sits above it
+   and reads across the full width instead. */
+@media (max-width: 900px) {
+  .cards__now {
+    position: static;
+    transform: none;
+    max-width: none;
+    text-align: center;
+    padding-inline: var(--gut);
+    margin-bottom: clamp(.75rem, 2vw, 1.25rem);
+  }
+  .cards__nowName { font-size: clamp(1.9rem, 8.5vw, 2.6rem); }
+  .cards__nowFact { max-width: 30ch; margin-inline: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cards__nowKind, .cards__nowName, .cards__nowFact {
+    opacity: 1; transform: none; transition: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   29. Hero drift
+   A pronounced Ken Burns move. TIME-based, not scroll-linked: the hero is
+   pinned and must hold position while the section below climbs over it.
+
+   Sizing history worth keeping: this began at 32s across a 10% scale — about
+   a pixel of travel per second, invisible even when running. Now 12s across
+   30%, with a three-stage path so it reads as a camera move rather than a
+   uniform zoom.
+
+   Overscan: the smallest scale is 1.12, leaving 6% spare on each edge against
+   a 3.5% maximum pan, so the photograph's own edge cannot enter frame.
+   -------------------------------------------------------------------------- */
+.hero__bg .plate-img {
+  transform-origin: 58% 42%;
+  /* Static base for reduced motion; the animation overrides it when allowed */
+  transform: scale(1.12);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero__bg .plate-img {
+    animation: heroDrift 12s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+}
+
+@keyframes heroDrift {
+  0%   { transform: scale(1.12) translate3d(0, 0, 0); }
+  50%  { transform: scale(1.27) translate3d(-2.5%, -1.5%, 0); }
+  100% { transform: scale(1.42) translate3d(-3.5%, -3%, 0); }
+}
+
+/* --------------------------------------------------------------------------
+   30. Drawn rules
+   The reveal engine has always supported data-draw (scaleX from 0) but nothing
+   used it. These rules replace the static borders on the pillars, stats and
+   contact rows, so each one draws itself in as the section arrives.
+   -------------------------------------------------------------------------- */
+.drawline {
+  display: block;
+  height: 1px;
+  width: 100%;
+  background: var(--line);
+  margin-bottom: 1.35rem;
+}
+.section--dark .drawline { background: var(--line-lite); }
+
+/* the borders these replace */
+.pillar { border-top: 0; padding-top: 0; }
+.stat   { border-top: 0; padding-top: 0; }
+.info   { border-top: 0; padding-top: 0; }
+.info .drawline { margin-bottom: 0.9rem; }
+
+/* Layered lift: elements drift at their own rate while the section crosses */
+[data-lift] { will-change: transform; }
+@media (prefers-reduced-motion: reduce) {
+  [data-lift] { translate: none !important; }
+}
+
+/* --------------------------------------------------------------------------
+   31. Values row — heading beside the video
+   The heading occupied only the left half of a full-width row, leaving the
+   right side empty. The video fills it.
+   -------------------------------------------------------------------------- */
+.values__top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 4rem);
+  align-items: center;
+  margin-bottom: clamp(2rem, 5vw, 4rem);
+}
+.values__intro { display: grid; gap: 1rem; align-content: center; max-width: 60ch; }
+
+.values__media {
+  position: relative;
+  margin: 0;
+  margin-inline: auto 0;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  /* Native 9:16, not a 4:5 crop. The clip is 540px wide, so displaying it
+     wider than this upscales it. Capped at 460 rather than 360: that trades
+     a little sharpness for presence, which is the call made here. Native 9:16
+     aspect also means nothing is cropped away. */
+  /* 4:5 rather than the clip's native 9:16 — at full 9:16 the frame ran 736px
+     tall on a phone and dominated the section. This crops top and bottom, so
+     object-position holds the subject (who sits high in frame) in view. */
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  max-width: 460px;
+  background: var(--muted);
+  box-shadow: 0 26px 60px -30px rgba(36, 31, 31, 0.5);
+}
+.values__media .plate-inner { position: absolute; inset: 0; }
+.values__media video,
+.values__media img { object-position: center 38%; }
+
+/* Stack on narrow screens, and cap the height so the video does not push the
+   values themselves off the first screenful. */
+@media (max-width: 860px) {
+  .values__top { grid-template-columns: 1fr; }
+
+  /* Edge to edge on a phone. This does upscale the 540px clip — roughly 1.5x
+     on a 2x screen — so it trades some sharpness for presence. Deliberate:
+     a bled video reads as part of the page, a centred 300px one reads as a
+     thumbnail sitting in a gutter. */
+  .values__media {
+    max-width: none;
+    width: auto;
+    margin-inline: calc(var(--gut) * -1);
+    border-radius: 0;
+  }
+}
