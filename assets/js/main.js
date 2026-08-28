@@ -8,8 +8,22 @@
   /* One source of truth, resolved in the <head> before first paint and
      recorded on <html data-motion>. Reading it here rather than the media
      query directly means the CSS and the JS can never disagree, and the
-     ?motion= override reaches both. */
-  var reduced = document.documentElement.getAttribute('data-motion') !== 'on';
+     ?motion= override reaches both.
+
+       full — nothing was asked for; everything runs
+       calm — the device asked for less motion
+       off  — no JavaScript; the page is complete and entirely still
+
+     "Less motion" is not "no motion". What the preference exists to prevent
+     is movement that can make a reader ill: parallax, drifting layers, a
+     photograph slowly zooming behind text, letters flying in from the side —
+     large or scroll-coupled movement nobody asked for. A carousel turning in
+     its own frame and a strip of type drifting at a constant rate are
+     contained and predictable, so they stay. Fades stay too; opacity is not
+     motion. */
+  var mode   = document.documentElement.getAttribute('data-motion') || 'off';
+  var motion = mode !== 'off';
+  var calm   = mode === 'calm';
   var $  = function (s, c) { return (c || document).querySelector(s); };
   var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
 
@@ -61,7 +75,7 @@
      ran at 3s and could not cover anything scrolled into view later. */
   function reveal(el) {
     el.classList.add('is-revealed');
-    if (reduced || el.__checked) return;
+    if (!motion || el.__checked) return;
     el.__checked = true;
     setTimeout(function () {
       var cs = getComputedStyle(el);
@@ -101,7 +115,7 @@
     pending = still;
   }
 
-  if (reduced) {
+  if (!motion) {
     revealAll();
   } else {
     // IntersectionObserver is the efficient path, but it is not the only one:
@@ -181,7 +195,7 @@
     setTimeout(releaseHero, 260);
   }
 
-  if (!pre || reduced) {
+  if (!pre || !motion) {
     finishPreloader();
   } else {
     var counter = $('.preloader__count');
@@ -258,7 +272,7 @@
   var fullBleedStack = window.matchMedia('(max-width: 1024px)');
 
   function onScrollStack() {
-    if (reduced || !stackItems.length) return;
+    if (!motion || calm || !stackItems.length) return;
 
     // Below 1024px the cards are no longer sticky (they are taller than a phone
     // viewport). Leaving the scale/opacity on would dim them permanently.
@@ -307,7 +321,7 @@
   });
 
   function onScrollParallax() {
-    if (reduced || !parallaxEls.length) return;
+    if (!motion || calm || !parallaxEls.length) return;
     var vh = window.innerHeight;
     parallaxEls.forEach(function (p) {
       var el = p.el;
@@ -367,12 +381,12 @@
     return { el: el, words: $$('.fill-word', el) };
   });
 
-  if (reduced) {
+  if (!motion) {
     fillBlocks.forEach(function (b) { b.words.forEach(function (w) { w.style.opacity = 1; }); });
   }
 
   function onScrollFill() {
-    if (reduced || !fillBlocks.length) return;
+    if (!motion || !fillBlocks.length) return;
     var vh = window.innerHeight;
     fillBlocks.forEach(function (b) {
       var rect = b.el.getBoundingClientRect();
@@ -398,7 +412,7 @@
   var railDragging = false;
 
   function onScrollRail() {
-    if (reduced || !railEl || railDragging) return;
+    if (!motion || !railEl || railDragging) return;
     var section = railEl.closest('section');
     if (!section) return;
     var rect = section.getBoundingClientRect();
@@ -502,7 +516,7 @@
   var galleryCards = galleryStrip ? $$('.gallery__item', galleryStrip) : [];
 
   function centreGalleryCard() {
-    if (reduced || !galleryStrip || !galleryCards.length) return;
+    if (!motion || calm || !galleryStrip || !galleryCards.length) return;
     // only while it is actually a strip; above the breakpoint it is a grid
     if (getComputedStyle(galleryStrip).display !== 'flex') {
       galleryCards.forEach(function (c) { c.classList.remove('is-centred'); });
@@ -531,7 +545,7 @@
   }
 
   function advanceGallery() {
-    if (reduced || !galleryIsStrip() || !galleryVisible) return;
+    if (!motion || !galleryIsStrip() || !galleryVisible) return;
     if (Date.now() < galleryPausedUntil) return;
 
     var span = galleryStrip.scrollWidth - galleryStrip.clientWidth;
@@ -566,7 +580,7 @@
       galleryStrip.addEventListener(evt, holdGallery, { passive: true });
     });
 
-    if (!reduced) {
+    if (motion) {
       // only tick while the strip is actually on screen
       if ('IntersectionObserver' in window) {
         new IntersectionObserver(function (entries) {
@@ -586,7 +600,7 @@
   var liftEls = $$('[data-lift]');
 
   function onScrollLift() {
-    if (reduced || !liftEls.length) return;
+    if (!motion || calm || !liftEls.length) return;
     var vh = window.innerHeight;
     for (var i = 0; i < liftEls.length; i++) {
       var el = liftEls[i];
@@ -694,7 +708,7 @@
   window.__stageCourses = maybeStageCourses;
 
   if (firstPanel) {
-    if (reduced || !('IntersectionObserver' in window)) {
+    if (!motion || !('IntersectionObserver' in window)) {
       $$('.course', firstPanel).forEach(function (r) { r.classList.add('is-in'); });
       firstPanelStaged = true;
     } else {
@@ -778,7 +792,7 @@
      ------------------------------------------------------------------------ */
   var stats = $$('[data-count]');
   if (stats.length) {
-    if (reduced || !('IntersectionObserver' in window)) {
+    if (!motion || !('IntersectionObserver' in window)) {
       stats.forEach(function (el) { el.textContent = el.getAttribute('data-count') + (el.getAttribute('data-suffix') || ''); });
     } else {
       var countIO = new IntersectionObserver(function (entries) {
@@ -825,7 +839,7 @@
      ------------------------------------------------------------------------ */
   var fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
-  if (fine && !reduced) {
+  if (fine && motion && !calm) {
     $$('[data-magnetic]').forEach(function (el) {
       el.addEventListener('pointermove', function (e) {
         var r = el.getBoundingClientRect();
@@ -914,7 +928,7 @@
     document.fonts.ready.then(measureMarquee);
   }
 
-  if (!reduced && marqueeUnits.length) {
+  if (motion && marqueeUnits.length) {
     var lastFrame = performance.now();
     (function marqueeTick(now) {
       // Normalise to 60fps so speed is frame-rate independent, and clamp so a

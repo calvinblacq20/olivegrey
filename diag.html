@@ -100,8 +100,8 @@ seconds, then reports.</p>
     var tlRuns = tl0 !== null && tl1 !== null && tl1 > tl0;
     var jsRuns = fps > 5;
 
-    add('Asks for reduced motion', mqReduce ? 'YES' : 'no', !mqReduce);
-    add('The site would set', mqReduce ? 'data-motion="off"' : 'data-motion="on"', !mqReduce);
+    add('Asks for reduced motion', mqReduce ? 'YES' : 'no', undefined);
+    add('The site would set', mqReduce ? 'data-motion="calm"' : 'data-motion="full"', undefined);
     add('JavaScript frames', Math.round(fps) + ' per second', jsRuns);
     add('CSS animations running', cssRuns ? 'yes' : 'NO', cssRuns);
     add('Document clock running', tlRuns ? 'yes' : 'NO', tlRuns);
@@ -113,10 +113,11 @@ seconds, then reports.</p>
     var v = document.getElementById('verdict');
     if (mqReduce) {
       v.innerHTML = '<b>This phone is asking for reduced motion.</b>' +
-        'The site is obeying it and switching every animation off. On iOS that ' +
-        'comes from Settings › Accessibility › Motion › Reduce Motion, ' +
-        'or from Low Power Mode. Nothing is broken — but tell me and I can ' +
-        'change what the site does about it.';
+        'On iOS that comes from Settings › Accessibility › Motion › Reduce ' +
+        'Motion, or from Low Power Mode. The site runs in its calm mode: the ' +
+        'carousel still turns, the type still drifts and things still fade in, ' +
+        'but nothing parallaxes, zooms or slides in from off screen. ' +
+        'Add ?motion=full to the address to see everything.';
     } else if (!jsRuns || !cssRuns) {
       v.innerHTML = '<b>This browser is not running animations.</b>' +
         'The phone is not asking for reduced motion, but frames are not being ' +

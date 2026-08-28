@@ -1308,6 +1308,22 @@ main > * {
 :root[data-motion="off"] .menu__list a { transform: none; }
 :root[data-motion="off"] .preloader { display: none; }
 
+/* --------------------------------------------------------------------------
+   The device asked for less movement.
+
+   Less, not none. Fades stay, because opacity is not motion, and so do the
+   ambient loops that turn at a constant rate in their own frame. What goes is
+   everything that travels: layers drifting against the scroll, the hero
+   photograph slowly zooming behind the type, letters arriving from off to one
+   side. That movement is what the preference exists to prevent.
+   -------------------------------------------------------------------------- */
+:root[data-motion="calm"] .split-unit,
+:root[data-motion="calm"] [data-reveal],
+:root[data-motion="calm"] .course { transform: none !important; }
+:root[data-motion="calm"] [data-lift],
+:root[data-motion="calm"] [data-parallax] .plate-inner { translate: none !important; }
+:root[data-motion="calm"] .menu__list a { transform: none; }
+
 /* Photograph layered over each card's illustration (see images.js) */
 .card3d__photo { object-fit: cover; z-index: 1; }
 
@@ -1394,7 +1410,7 @@ main > * {
 .gallery__item .plate-img {
   transition: transform 0.9s var(--ease);
 }
-:root[data-motion="on"] .gallery__item:hover .plate-img { transform: scale(1.05); }
+:root[data-motion="full"] .gallery__item:hover .plate-img { transform: scale(1.05); }
 
 @media (max-width: 900px) {
   .gallery__grid { grid-template-columns: repeat(2, 1fr); }
@@ -1430,12 +1446,12 @@ main > * {
   }
 
   /* Cards settle as they reach the centre of the strip */
-  :root[data-motion="on"] .gallery__item {
+  :root[data-motion="full"] .gallery__item {
     transform: scale(0.94);
     opacity: 0.72;
     transition: transform 0.5s var(--ease), opacity 0.5s var(--ease);
   }
-  :root[data-motion="on"] .gallery__item.is-centred { transform: scale(1); opacity: 1; }
+  :root[data-motion="full"] .gallery__item.is-centred { transform: scale(1); opacity: 1; }
 }
 
 /* --------------------------------------------------------------------------
@@ -1552,7 +1568,7 @@ main > * {
   transform: scale(1.12);
 }
 
-:root[data-motion="on"] .hero__bg .plate-img {
+:root[data-motion="full"] .hero__bg .plate-img {
   animation: heroDrift 12s ease-in-out infinite alternate;
   will-change: transform;
 }

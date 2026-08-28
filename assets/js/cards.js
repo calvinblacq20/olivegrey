@@ -16,7 +16,10 @@
   var viewport = document.querySelector('.cards__viewport');
   if (!stage || !viewport) return;
 
-  var reduced = document.documentElement.getAttribute('data-motion') !== 'on';
+  /* The carousel turns in its own frame at a constant rate — contained and
+     predictable — so it keeps running when the device asks for less motion.
+     It stops only where there is no scripting at all. */
+  var reduced = document.documentElement.getAttribute('data-motion') === 'off';
 
   /* Each card is a place on the campus rather than a payment card.
      `img` keys resolve against the manifest in images.js — change photos

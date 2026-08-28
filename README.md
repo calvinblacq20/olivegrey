@@ -72,22 +72,36 @@ broken path never leaves a broken-image icon.
 
 ### Motion is one switch
 
-`<html data-motion="on|off">` is the single source of truth. The document ships
-as `off`, an inline script in `<head>` turns it on before first paint unless the
-device asks for less, and both the stylesheet and the JavaScript read that one
-attribute. They cannot disagree, and with scripting off the page stays `off` —
-complete, readable, and simply still.
+`<html data-motion>` is the single source of truth, resolved by an inline
+script in `<head>` before first paint. Both the stylesheet and the JavaScript
+read that one attribute, so they cannot disagree.
+
+| Value | When | What runs |
+|---|---|---|
+| `full` | nothing was asked for | everything |
+| `calm` | the device asked for less motion | fades, the carousel, the drifting type |
+| `off` | no JavaScript | nothing moves; the page is complete and readable |
+
+**`calm` is less motion, not none.** What the preference exists to prevent is
+movement that can make a reader ill — parallax, layers drifting against the
+scroll, a photograph zooming slowly behind text, letters flying in from off to
+one side. A carousel turning in its own frame at a constant rate is contained
+and predictable, so it stays, and so do fades: opacity is not motion.
+
+Killing everything was the first implementation, and it made the site look
+broken on any handset with Reduce Motion switched on — which on iOS includes
+every phone in Low Power Mode.
 
 **iOS reports `prefers-reduced-motion: reduce` under Low Power Mode**, not only
 under the Reduce Motion accessibility toggle. So an iPhone can arrive with every
 animation silenced and nothing on screen saying why; it reads as a broken site.
 That is worth knowing before debugging anything else.
 
-`?motion=on` and `?motion=off` force it either way. Use them to tell a device
+`?motion=full`, `?motion=calm` and `?motion=off` force it. Use them to tell a device
 setting apart from a real bug without touching the handset's settings:
 
 ```
-olivegrey.vercel.app/?motion=on
+olivegrey.vercel.app/?motion=full
 ```
 
 If it animates with the flag and not without, the phone asked for stillness.
