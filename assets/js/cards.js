@@ -37,7 +37,7 @@
   var D = 1350;        // must match the CSS perspective distance
 
   var cards = [];
-  var metrics = { cardW: 336, cardH: 211 };
+  var metrics = { cardW: 336, cardH: 211, stageH: 0 };
   var progress = 0;
   var mouse = { x: 0, y: 0, tx: 0, ty: 0 };
   var frame = 0;
@@ -127,6 +127,7 @@
     }
     viewport.innerHTML = html;
     cards = Array.prototype.slice.call(viewport.querySelectorAll('.card3d'));
+    for (var c = 0; c < cards.length; c++) cards[c].style.opacity = '1';
   }
 
   /* ------------------------------------------------------------- measure */
@@ -148,7 +149,7 @@
     cardW = Math.min(470, Math.max(240, cardW));
     var cardH = Math.round(cardW / 1.5925);   // standard card ratio
 
-    metrics = { cardW: cardW, cardH: cardH };
+    metrics = { cardW: cardW, cardH: cardH, stageH: stage.clientHeight || h };
     viewport.style.width = cardW + 'px';
     viewport.style.height = cardH + 'px';
     for (var i = 0; i < cards.length; i++) {
@@ -162,7 +163,11 @@
   function smoothstep(t) { return t * t * (3 - 2 * t); }
 
   function layout() {
-    var h = stage.clientHeight || window.innerHeight;
+    /* Measured in resize(), not here. Reading clientHeight mid-loop forces
+       the browser to re-run layout every frame just after we have written
+       five transforms to it — the classic read-after-write stall, and on a
+       phone it is the difference between gliding and stepping. */
+    var h = metrics.stageH || window.innerHeight;
     var cardH = metrics.cardH;
 
     // A non-linear step: the card dwells briefly at front centre, then
@@ -185,8 +190,14 @@
       var abs = Math.abs(offset);
       var sign = Math.sign(offset);
 
-      if (abs > 3.0) { card.style.visibility = 'hidden'; continue; }
-      card.style.visibility = 'visible';
+      /* Only touch the DOM when the value actually changes. Re-asserting
+         the same visibility on five cards sixty times a second is free of
+         effect but not free of cost. */
+      if (abs > 3.0) {
+        if (card.__vis !== 'hidden') { card.__vis = 'hidden'; card.style.visibility = 'hidden'; }
+        continue;
+      }
+      if (card.__vis !== 'visible') { card.__vis = 'visible'; card.style.visibility = 'visible'; }
 
       var y = 0, z = 0, rot = 0, t, e;
 
@@ -227,12 +238,16 @@
       var tiltX = -mouse.y * 12 * centreFactor;
       var tiltY = mouse.x * 15 * centreFactor;
 
-      card.style.zIndex = Math.round(z).toString();
-      card.style.opacity = '1';
-      card.style.transform =
-        'translateY(' + y.toFixed(2) + 'px) translateZ(' + z.toFixed(2) + 'px) ' +
-        'rotateX(' + (localRot + tiltX).toFixed(2) + 'deg) ' +
-        'rotateY(' + tiltY.toFixed(2) + 'deg) rotateZ(-3deg)';
+      var zi = Math.round(z).toString();
+      if (card.__zi !== zi) { card.__zi = zi; card.style.zIndex = zi; }
+
+      // opacity is a constant here; it is set once at build time
+
+      var t =
+        'translateY(' + y.toFixed(1) + 'px) translateZ(' + z.toFixed(1) + 'px) ' +
+        'rotateX(' + (localRot + tiltX).toFixed(1) + 'deg) ' +
+        'rotateY(' + tiltY.toFixed(1) + 'deg) rotateZ(-3deg)';
+      if (card.__t !== t) { card.__t = t; card.style.transform = t; }
     }
   }
 
@@ -240,13 +255,19 @@
   var last = 0;
   var beat = 0;         // when the loop last ran, for the watchdog below
 
-  /* Cheap visibility test, done inside the loop rather than by an observer.
-     An IntersectionObserver that never delivers would leave the carousel
-     frozen for good; a rect read cannot fail that way. */
-  function onScreen() {
+  /* Visibility is sampled rather than observed. An IntersectionObserver
+     that never delivers would leave the carousel frozen for good; a rect
+     read cannot fail that way. But a rect read is also a forced layout, so
+     it happens a few times a second instead of sixty — the stage cannot
+     leave the screen faster than that matters. */
+  var visible = true;
+  var sampleIn = 0;
+
+  function sampleVisibility() {
     var r = stage.getBoundingClientRect();
     var vh = window.innerHeight || document.documentElement.clientHeight;
-    return r.bottom > -200 && r.top < vh + 200;
+    visible = r.bottom > -200 && r.top < vh + 200;
+    if (!metrics.stageH) metrics.stageH = stage.clientHeight || vh;
   }
 
   function tick(now) {
@@ -260,7 +281,8 @@
     last = now;
     beat = now;
 
-    if (!onScreen()) return;   // still turning over, just not doing the work
+    if (--sampleIn <= 0) { sampleIn = 20; sampleVisibility(); }
+    if (!visible) return;      // still turning over, just not doing the work
 
     progress += dt * RATE;
     // Inertia: the tilt lags slightly behind the cursor

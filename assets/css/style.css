@@ -877,6 +877,10 @@ main > * {
 .card3d__mid {
   background: #786C6C;
   border: 1px solid #786C6C;
+  /* Nothing inside these to clip — they are solid colour, and border-radius
+     rounds a background on its own. Dropping the clip takes fifteen of the
+     twenty-five layers on this stage out of the compositor's clipping work. */
+  overflow: visible;
 }
 .card3d__face {
   background: var(--ink-soft);
@@ -889,6 +893,17 @@ main > * {
     0 30px 60px -24px rgba(36, 31, 31, 0.55),
     0 8px 18px -10px rgba(36, 31, 31, 0.35),
     inset 0 1px 1px rgba(255, 255, 255, 0.28);
+}
+/* A phone redraws these faces on every degree of rotation. Three stacked
+   shadows at a 60px blur is a great many pixels to repaint sixty times a
+   second for a distinction nobody can see at arm's length, so the cast shadow
+   collapses to one pass here. The rim light stays — that one reads. */
+@media (pointer: coarse), (max-width: 1024px) {
+  .card3d__face {
+    box-shadow:
+      0 16px 30px -18px rgba(36, 31, 31, 0.5),
+      inset 0 1px 1px rgba(255, 255, 255, 0.26);
+  }
 }
 .card3d__art {
   position: absolute;

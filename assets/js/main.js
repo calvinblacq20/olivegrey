@@ -295,17 +295,27 @@
   /* ------------------------------------------------------------------------
      6. Parallax on media plates — subtle drift as they cross the viewport.
      ------------------------------------------------------------------------ */
-  var parallaxEls = $$('[data-parallax]');
+  /* Resolved once. Querying for .plate-inner and re-parsing the speed
+     attribute inside the loop meant a DOM lookup per plate per frame, for
+     values that never change. */
+  var parallaxEls = $$('[data-parallax]').map(function (el) {
+    return {
+      el: el,
+      inner: $('.plate-inner', el) || el,
+      speed: parseFloat(el.getAttribute('data-parallax')) || 0.08
+    };
+  });
 
   function onScrollParallax() {
     if (reduced || !parallaxEls.length) return;
     var vh = window.innerHeight;
-    parallaxEls.forEach(function (el) {
+    parallaxEls.forEach(function (p) {
+      var el = p.el;
       var rect = el.getBoundingClientRect();
       if (rect.bottom < -200 || rect.top > vh + 200) return;
-      var speed = parseFloat(el.getAttribute('data-parallax')) || 0.08;
+      var speed = p.speed;
       var centre = rect.top + rect.height / 2 - vh / 2;
-      var inner = $('.plate-inner', el) || el;
+      var inner = p.inner;
 
       // The layer is overscanned by 12% top and bottom. Travel works out at
       // (vh + h) / 2 * speed, which outgrows that budget whenever the element
@@ -313,7 +323,8 @@
       // ratio, otherwise the layer's own edge slides into frame.
       var limit = rect.height * 0.10;
       var offset = Math.max(-limit, Math.min(limit, -centre * speed));
-      inner.style.translate = '0 ' + offset.toFixed(2) + 'px';
+      var t = '0 ' + offset.toFixed(1) + 'px';
+      if (p.last !== t) { p.last = t; inner.style.translate = t; }
     });
   }
 
@@ -581,12 +592,17 @@
       var el = liftEls[i];
       var r = el.getBoundingClientRect();
       if (r.bottom < -120 || r.top > vh + 120) continue;
-      var depth = parseFloat(el.getAttribute('data-lift')) || 0.05;
+      // Parsed once and kept on the element, not re-read every frame.
+      var depth = el.__depth;
+      if (depth === undefined) {
+        depth = el.__depth = parseFloat(el.getAttribute('data-lift')) || 0.05;
+      }
       // -0.5..0.5 as the element crosses, so it settles level mid-viewport
       var p = (r.top + r.height / 2 - vh / 2) / vh;
       // clamped so a tall element near the edges cannot fling far
       var offset = Math.max(-70, Math.min(70, p * vh * depth));
-      el.style.translate = '0 ' + offset.toFixed(1) + 'px';
+      var t = '0 ' + offset.toFixed(1) + 'px';
+      if (el.__lift !== t) { el.__lift = t; el.style.translate = t; }
     }
   }
 
@@ -856,10 +872,12 @@
     m.appendChild(clone);
     // Both rows carry the same offset, so the pair travels as one strip and
     // wraps seamlessly when it has moved exactly one row width.
-    marqueeUnits.push({ targets: [row, clone], measure: row, base: MARQUEE_BASE, x: 0, paused: false });
+    marqueeUnits.push({ targets: [row, clone], measure: row, base: MARQUEE_BASE, x: 0, w: 0, paused: false });
 
-    m.addEventListener('pointerenter', function () { marqueeUnits.forEach(function (u) { if (u.rows[0] === row) u.paused = true; }); });
-    m.addEventListener('pointerleave', function () { marqueeUnits.forEach(function (u) { if (u.rows[0] === row) u.paused = false; }); });
+    // Match on `measure` — the unit has no `rows` property, and reaching for
+    // one threw on every hover and every touch.
+    m.addEventListener('pointerenter', function () { marqueeUnits.forEach(function (u) { if (u.measure === row) u.paused = true; }); });
+    m.addEventListener('pointerleave', function () { marqueeUnits.forEach(function (u) { if (u.measure === row) u.paused = false; }); });
   });
 
   /* The oversized wordstrips ride the same loop. They drift under their own
@@ -875,9 +893,26 @@
       measure: unit,
       base: MARQUEE_BASE * speed,
       x: 0,
+      w: 0,
       paused: false
     });
   });
+
+  /* Row widths are measured here and on resize, never in the loop. Reading a
+     rect mid-animation forces the browser to re-run layout for the whole
+     document, once per strip, sixty times a second. */
+  function measureMarquee() {
+    for (var i = 0; i < marqueeUnits.length; i++) {
+      var u = marqueeUnits[i];
+      u.w = u.measure.getBoundingClientRect().width;
+    }
+  }
+  measureMarquee();
+  window.addEventListener('resize', measureMarquee, { passive: true });
+  if (document.fonts && document.fonts.ready) {
+    // A late webfont reflows the strip and changes its width.
+    document.fonts.ready.then(measureMarquee);
+  }
 
   if (!reduced && marqueeUnits.length) {
     var lastFrame = performance.now();
@@ -893,7 +928,7 @@
 
       marqueeUnits.forEach(function (u) {
         if (u.paused) return;
-        var w = u.measure.getBoundingClientRect().width;
+        var w = u.w;
         if (!w) return;
         u.x -= (u.base + boost) * dir * dt;
         if (u.x <= -w) u.x += w;
