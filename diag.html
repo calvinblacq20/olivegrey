@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Motion diagnostic — Olive Grey</title>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    margin: 0; padding: 20px 18px 60px;
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #F5F2F1; color: #241F1F;
+  }
+  @media (prefers-color-scheme: dark) {
+    body { background: #171414; color: #F0EBEA; }
+  }
+  h1 { font-size: 19px; margin: 0 0 4px; }
+  p.sub { margin: 0 0 20px; color: #786C6C; font-size: 14px; }
+  .row {
+    display: flex; justify-content: space-between; gap: 12px;
+    padding: 11px 0; border-bottom: 1px solid rgba(128,110,110,0.28);
+  }
+  .row b { font-weight: 600; }
+  .row span { text-align: right; font-variant-numeric: tabular-nums; }
+  .yes { color: #1E7A34; font-weight: 700; }
+  .no  { color: #C11622; font-weight: 700; }
+  .verdict {
+    margin: 22px 0; padding: 16px; border-radius: 12px;
+    background: #241F1F; color: #F5F2F1; font-size: 15px;
+  }
+  .verdict b { display: block; font-size: 17px; margin-bottom: 6px; }
+  h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .08em;
+       color: #786C6C; margin: 26px 0 10px; }
+  .track { background: rgba(128,110,110,0.2); border-radius: 8px; height: 46px;
+           position: relative; overflow: hidden; margin-bottom: 8px; }
+  .box { position: absolute; top: 8px; left: 0; width: 30px; height: 30px;
+         border-radius: 7px; background: #E41824; }
+  #cssbox { animation: slide 2s linear infinite alternate; }
+  @keyframes slide { from { transform: translateX(4px); } to { transform: translateX(calc(100vw - 90px)); } }
+  .lbl { font-size: 13px; color: #786C6C; margin-bottom: 14px; }
+  code { font-size: 13px; word-break: break-all; color: #786C6C; }
+</style>
+</head>
+<body>
+
+<h1>Motion diagnostic</h1>
+<p class="sub">Open this on the phone that isn't animating. It measures for two
+seconds, then reports.</p>
+
+<div id="verdict" class="verdict"><b>Measuring…</b>Hold still for two seconds.</div>
+
+<div id="rows"></div>
+
+<h2>Watch these two bars</h2>
+<div class="track"><div class="box" id="jsbox"></div></div>
+<div class="lbl">Moved by JavaScript (requestAnimationFrame)</div>
+<div class="track"><div class="box" id="cssbox"></div></div>
+<div class="lbl">Moved by CSS animation</div>
+
+<h2>Device</h2>
+<code id="ua"></code>
+
+<script>
+(function () {
+  var out = [];
+  function add(k, v, good) {
+    out.push('<div class="row"><b>' + k + '</b><span' +
+      (good === undefined ? '' : ' class="' + (good ? 'yes' : 'no') + '"') +
+      '>' + v + '</span></div>');
+  }
+
+  var mqReduce = window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Drive the JS bar and count frames delivered
+  var frames = 0, t0 = (performance && performance.now()) || Date.now(), box = document.getElementById('jsbox');
+  var travel = Math.max(40, window.innerWidth - 90);
+  (function loop(now) {
+    frames++;
+    var t = (((now || 0) / 1400) % 2);
+    if (t > 1) t = 2 - t;
+    box.style.transform = 'translateX(' + (4 + t * travel).toFixed(1) + 'px)';
+    requestAnimationFrame(loop);
+  })(t0);
+
+  var css = document.getElementById('cssbox');
+  var anim0 = null;
+  if (css.getAnimations) { var a = css.getAnimations()[0]; anim0 = a ? a.currentTime : null; }
+  var tl0 = document.timeline ? document.timeline.currentTime : null;
+
+  setTimeout(function () {
+    var elapsed = ((performance && performance.now()) || Date.now()) - t0;
+    var fps = frames / (elapsed / 1000);
+
+    var anim1 = null;
+    if (css.getAnimations) { var b = css.getAnimations()[0]; anim1 = b ? b.currentTime : null; }
+    var tl1 = document.timeline ? document.timeline.currentTime : null;
+
+    var cssRuns = anim0 !== null && anim1 !== null && anim1 > anim0;
+    var tlRuns = tl0 !== null && tl1 !== null && tl1 > tl0;
+    var jsRuns = fps > 5;
+
+    add('Asks for reduced motion', mqReduce ? 'YES' : 'no', !mqReduce);
+    add('The site would set', mqReduce ? 'data-motion="off"' : 'data-motion="on"', !mqReduce);
+    add('JavaScript frames', Math.round(fps) + ' per second', jsRuns);
+    add('CSS animations running', cssRuns ? 'yes' : 'NO', cssRuns);
+    add('Document clock running', tlRuns ? 'yes' : 'NO', tlRuns);
+    add('Page visible to browser', document.visibilityState, document.visibilityState === 'visible');
+    add('Screen', window.innerWidth + ' × ' + window.innerHeight, undefined);
+    add('Device pixel ratio', window.devicePixelRatio || 1, undefined);
+    document.getElementById('rows').innerHTML = out.join('');
+
+    var v = document.getElementById('verdict');
+    if (mqReduce) {
+      v.innerHTML = '<b>This phone is asking for reduced motion.</b>' +
+        'The site is obeying it and switching every animation off. On iOS that ' +
+        'comes from Settings › Accessibility › Motion › Reduce Motion, ' +
+        'or from Low Power Mode. Nothing is broken — but tell me and I can ' +
+        'change what the site does about it.';
+    } else if (!jsRuns || !cssRuns) {
+      v.innerHTML = '<b>This browser is not running animations.</b>' +
+        'The phone is not asking for reduced motion, but frames are not being ' +
+        'delivered here (' + Math.round(fps) + '/second, CSS ' +
+        (cssRuns ? 'running' : 'stopped') + '). That points at the in-app ' +
+        'browser rather than the site. Try opening the same page in Safari.';
+    } else {
+      v.innerHTML = '<b>Animation is working on this browser.</b>' +
+        Math.round(fps) + ' frames per second, CSS animations running. If the ' +
+        'site still looks still here, the fault is in the site and I need to ' +
+        'keep digging.';
+    }
+  }, 2000);
+
+  document.getElementById('ua').textContent = navigator.userAgent;
+})();
+</script>
+</body>
+</html>

@@ -28,10 +28,17 @@
 
   var DIR = 'assets/img/';
 
+  /* Every media URL carries this. Assets are cached hard by the CDN — which is
+     what makes the site quick on a Ghanaian mobile connection — so a file
+     replaced under the same name would otherwise keep showing the old picture.
+     Bump it whenever a photograph or video is swapped, exactly like the ?v= on
+     the stylesheet. */
+  var V = '?v=54';
+
   /* Photographs taken from the school's own site and served locally.
      Filenames prefixed by what they show, so a slot can be repointed at a
      glance. Activity names are the school's own. */
-  function img(f) { return DIR + f; }
+  function img(f) { return DIR + f + V; }
 
   window.SCHOOL_IMAGES = {
     // --- pupils and classrooms ---
