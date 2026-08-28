@@ -1,8 +1,28 @@
 <!DOCTYPE html>
-<html lang="en" class="is-loading">
+<html lang="en" class="is-loading" data-motion="off">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script>
+/* Motion is opt-in. The document ships with data-motion="off", so with
+   scripting disabled the page is complete, readable and simply still. This
+   turns it on unless the device asks for less.
+
+   Worth knowing: iOS reports prefers-reduced-motion under Low Power Mode as
+   well as under the Reduce Motion accessibility toggle. A phone can therefore
+   arrive here with every animation silenced and nothing on screen explaining
+   why — which looks exactly like a broken site.
+
+   ?motion=on and ?motion=off force it either way, for checking on a real
+   handset without changing the device's settings. */
+(function () {
+  var forced = (location.search.match(/[?&]motion=(on|off)/) || [])[1];
+  var mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+  var on = forced ? forced === 'on' : !(mq && mq.matches);
+  document.documentElement.setAttribute('data-motion', on ? 'on' : 'off');
+})();
+</script>
 <title>Olive Grey School — Pre-School &amp; iPrimary, Accra</title>
 <meta name="description" content="Olive Grey School is a pre-school and primary school at Race Course, Gyedu Junction, Accra. Pearson Edexcel alongside the GES curriculum, for children from birth to eleven.">
 <meta name="theme-color" content="#241F1F">
@@ -15,7 +35,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Aboreto&family=Zalando+Sans:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/style.css?v=49">
+<link rel="stylesheet" href="assets/css/style.css?v=50">
 
 <link rel="icon" href="assets/img/mark.png" sizes="any">
 <link rel="apple-touch-icon" href="assets/img/mark.png">
@@ -1123,8 +1143,8 @@
 
 <!-- Bump ?v= when editing the CSS or JS so browsers pick the change up -->
 <!-- images.js must load first: it defines the photo manifest the others read -->
-<script src="assets/js/images.js?v=49"></script>
-<script src="assets/js/main.js?v=49"></script>
-<script src="assets/js/cards.js?v=49"></script>
+<script src="assets/js/images.js?v=50"></script>
+<script src="assets/js/main.js?v=50"></script>
+<script src="assets/js/cards.js?v=50"></script>
 </body>
 </html>

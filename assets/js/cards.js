@@ -16,7 +16,7 @@
   var viewport = document.querySelector('.cards__viewport');
   if (!stage || !viewport) return;
 
-  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var reduced = document.documentElement.getAttribute('data-motion') !== 'on';
 
   /* Each card is a place on the campus rather than a payment card.
      `img` keys resolve against the manifest in images.js — change photos
@@ -169,7 +169,7 @@
     // accelerates away to the next one.
     var rounded = Math.round(progress);
     var diff = progress - rounded;                       // [-0.5, 0.5]
-    var eased = Math.sign(diff) * Math.pow(Math.abs(diff) * 2, 4.2) / 2;
+    var eased = Math.sign(diff) * Math.pow(Math.abs(diff) * 2, 2.6) / 2;
     var active = rounded + eased;
     setNow(rounded);
 
@@ -236,13 +236,54 @@
     }
   }
 
-  function tick() {
-    progress += 0.0016;
+  var RATE = 0.00016;   // cards per millisecond — one turn every ~6 seconds
+  var last = 0;
+  var beat = 0;         // when the loop last ran, for the watchdog below
+
+  /* Cheap visibility test, done inside the loop rather than by an observer.
+     An IntersectionObserver that never delivers would leave the carousel
+     frozen for good; a rect read cannot fail that way. */
+  function onScreen() {
+    var r = stage.getBoundingClientRect();
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    return r.bottom > -200 && r.top < vh + 200;
+  }
+
+  function tick(now) {
+    frame = requestAnimationFrame(tick);
+
+    /* Time-based, not per-frame. iOS runs this at 30fps under load and stops
+       it outright while a finger is on the screen, so a fixed step per frame
+       would drift to half speed. Clamped, so coming back to a backgrounded
+       page does not jump the carousel forward by a minute. */
+    var dt = Math.min(now - last, 100);
+    last = now;
+    beat = now;
+
+    if (!onScreen()) return;   // still turning over, just not doing the work
+
+    progress += dt * RATE;
     // Inertia: the tilt lags slightly behind the cursor
     mouse.x += (mouse.tx - mouse.x) * 0.08;
     mouse.y += (mouse.ty - mouse.y) * 0.08;
     layout();
+  }
+
+  function start() {
+    last = beat = (window.performance && performance.now()) || Date.now();
+    cancelAnimationFrame(frame);
     frame = requestAnimationFrame(tick);
+  }
+
+  /* Safari suspends requestAnimationFrame when the page goes to the back-
+     ground, when it is restored from the back/forward cache, and sometimes
+     after a long scroll — and does not reliably resume it. So the loop is
+     never trusted to keep itself alive: a slow timer checks it is still
+     beating and starts it again if it is not. */
+  function watchdog() {
+    if (document.hidden) return;
+    var now = (window.performance && performance.now()) || Date.now();
+    if (now - beat > 1200) start();
   }
 
   /* --------------------------------------------------------------- input */
@@ -269,24 +310,13 @@
     progress = 0;
     layout();
   } else {
-    /* Start immediately, and let the observer only PAUSE it when it confirms
-       the section is off screen. Gating the start on the observer means one
-       silent delivery leaves the carousel frozen for good — the same
-       fail-closed trap as the reveals and the gallery. */
-    frame = requestAnimationFrame(tick);
-
-    if ('IntersectionObserver' in window) {
-      var io = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting && !frame) {
-            frame = requestAnimationFrame(tick);
-          } else if (!entry.isIntersecting && frame) {
-            cancelAnimationFrame(frame);
-            frame = 0;
-          }
-        });
-      }, { rootMargin: '200px' });
-      io.observe(stage);
-    }
+    start();
+    setInterval(watchdog, 2000);
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) start();
+    });
+    // Back/forward cache restore — Safari hands the page back with its
+    // animation frames already cancelled.
+    window.addEventListener('pageshow', start);
   }
 })();

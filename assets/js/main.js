@@ -5,7 +5,11 @@
 (function () {
   'use strict';
 
-  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* One source of truth, resolved in the <head> before first paint and
+     recorded on <html data-motion>. Reading it here rather than the media
+     query directly means the CSS and the JS can never disagree, and the
+     ?motion= override reaches both. */
+  var reduced = document.documentElement.getAttribute('data-motion') !== 'on';
   var $  = function (s, c) { return (c || document).querySelector(s); };
   var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
 

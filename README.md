@@ -50,10 +50,10 @@ Type is Aboreto for display and Zalando Sans for body, both from Google Fonts.
 edit.** Markup refers to pictures by key (`data-img="classroom"`), so adding a
 photograph never means touching `index.html`.
 
-There are four photographs so far, taken from the school's own site and served
-locally rather than hotlinked, so several slots reuse the same picture. To add
-more: drop files into `assets/img/`, add a line to the manifest, point the
-slots at them.
+The photographs are the school's own, served locally rather than hotlinked. To
+add more: drop files into `assets/img/`, add a line to the manifest, point the
+slots at them. A slot can hold a video instead of a photograph — give it a
+`poster`, which on a slow connection may be all a visitor ever sees.
 
 Each photo is layered **over** an inline SVG illustration. If a file goes
 missing the `<img>` removes itself and the illustration shows through, so a
@@ -70,8 +70,27 @@ broken path never leaves a broken-image icon.
 | Parallax drift | `data-parallax="0.06"` |
 | Magnetic hover | `data-magnetic` on a button |
 
-Everything is disabled under `prefers-reduced-motion: reduce`, and all content
-is readable with JavaScript switched off.
+### Motion is one switch
+
+`<html data-motion="on|off">` is the single source of truth. The document ships
+as `off`, an inline script in `<head>` turns it on before first paint unless the
+device asks for less, and both the stylesheet and the JavaScript read that one
+attribute. They cannot disagree, and with scripting off the page stays `off` —
+complete, readable, and simply still.
+
+**iOS reports `prefers-reduced-motion: reduce` under Low Power Mode**, not only
+under the Reduce Motion accessibility toggle. So an iPhone can arrive with every
+animation silenced and nothing on screen saying why; it reads as a broken site.
+That is worth knowing before debugging anything else.
+
+`?motion=on` and `?motion=off` force it either way. Use them to tell a device
+setting apart from a real bug without touching the handset's settings:
+
+```
+olivegrey.vercel.app/?motion=on
+```
+
+If it animates with the flag and not without, the phone asked for stillness.
 
 ### Implementation notes worth keeping
 
@@ -93,6 +112,12 @@ These look odd until you know why. Please don't "tidy" them:
 - **Parallax offset is clamped to 10% of element height**, because travel is
   `(viewport + height) / 2 × speed` and outgrows the 12% overscan on tall
   screens.
+- **The carousel loop is time-based and self-restarting.** Safari stops
+  `requestAnimationFrame` while a finger is on the screen, when the page is
+  backgrounded, and when it comes back from the back/forward cache — and does
+  not reliably resume. So a watchdog checks the loop is still beating, and the
+  on-screen test is a rect read inside the loop rather than an observer that
+  can fail to deliver.
 - **Card stacking is desktop-only.** Below 1024px the cards run edge to edge
   and scroll normally — pinned, they were taller than a phone viewport and got
   clipped.

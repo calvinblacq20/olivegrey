@@ -1023,9 +1023,7 @@ main > * {
   .cards__stage { height: clamp(460px, 68svh, 640px); }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .card3d { transition: none; }
-}
+:root[data-motion="off"] .card3d { transition: none; }
 
 /* Category labels, so each card says what it is */
 .card3d__kind {
@@ -1278,20 +1276,22 @@ main > * {
 /* --------------------------------------------------------------------------
    23. Reduced motion
    -------------------------------------------------------------------------- */
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-  .split-unit, [data-reveal], .course { opacity: 1 !important; transform: none !important; }
-  [data-clip] { clip-path: none !important; }
-  [data-clip] .plate-inner { transform: none !important; }
-  [data-draw] { transform: none !important; }
-  .menu__list a { transform: none; }
-  .preloader { display: none; }
+:root[data-motion="off"] { scroll-behavior: auto; }
+:root[data-motion="off"] *,
+:root[data-motion="off"] *::before,
+:root[data-motion="off"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
 }
+:root[data-motion="off"] .split-unit,
+:root[data-motion="off"] [data-reveal],
+:root[data-motion="off"] .course { opacity: 1 !important; transform: none !important; }
+:root[data-motion="off"] [data-clip] { clip-path: none !important; }
+:root[data-motion="off"] [data-clip] .plate-inner { transform: none !important; }
+:root[data-motion="off"] [data-draw] { transform: none !important; }
+:root[data-motion="off"] .menu__list a { transform: none; }
+:root[data-motion="off"] .preloader { display: none; }
 
 /* Photograph layered over each card's illustration (see images.js) */
 .card3d__photo { object-fit: cover; z-index: 1; }
@@ -1379,9 +1379,7 @@ main > * {
 .gallery__item .plate-img {
   transition: transform 0.9s var(--ease);
 }
-@media (prefers-reduced-motion: no-preference) {
-  .gallery__item:hover .plate-img { transform: scale(1.05); }
-}
+:root[data-motion="on"] .gallery__item:hover .plate-img { transform: scale(1.05); }
 
 @media (max-width: 900px) {
   .gallery__grid { grid-template-columns: repeat(2, 1fr); }
@@ -1417,14 +1415,12 @@ main > * {
   }
 
   /* Cards settle as they reach the centre of the strip */
-  @media (prefers-reduced-motion: no-preference) {
-    .gallery__item {
-      transform: scale(0.94);
-      opacity: 0.72;
-      transition: transform 0.5s var(--ease), opacity 0.5s var(--ease);
-    }
-    .gallery__item.is-centred { transform: scale(1); opacity: 1; }
+  :root[data-motion="on"] .gallery__item {
+    transform: scale(0.94);
+    opacity: 0.72;
+    transition: transform 0.5s var(--ease), opacity 0.5s var(--ease);
   }
+  :root[data-motion="on"] .gallery__item.is-centred { transform: scale(1); opacity: 1; }
 }
 
 /* --------------------------------------------------------------------------
@@ -1445,9 +1441,7 @@ main > * {
 @keyframes crestIn {
   to { opacity: 1; transform: scale(1); }
 }
-@media (prefers-reduced-motion: reduce) {
-  .preloader__crest { opacity: 1; transform: none; animation: none; }
-}
+:root[data-motion="off"] .preloader__crest { opacity: 1; transform: none; animation: none; }
 
 /* --------------------------------------------------------------------------
    28. Carousel side label
@@ -1518,10 +1512,10 @@ main > * {
   .cards__nowFact { max-width: 30ch; margin-inline: auto; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .cards__nowKind, .cards__nowName, .cards__nowFact {
-    opacity: 1; transform: none; transition: none;
-  }
+:root[data-motion="off"] .cards__nowKind,
+:root[data-motion="off"] .cards__nowName,
+:root[data-motion="off"] .cards__nowFact {
+  opacity: 1; transform: none; transition: none;
 }
 
 /* --------------------------------------------------------------------------
@@ -1543,11 +1537,9 @@ main > * {
   transform: scale(1.12);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .hero__bg .plate-img {
-    animation: heroDrift 12s ease-in-out infinite alternate;
-    will-change: transform;
-  }
+:root[data-motion="on"] .hero__bg .plate-img {
+  animation: heroDrift 12s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 @keyframes heroDrift {
@@ -1579,9 +1571,7 @@ main > * {
 
 /* Layered lift: elements drift at their own rate while the section crosses */
 [data-lift] { will-change: transform; }
-@media (prefers-reduced-motion: reduce) {
-  [data-lift] { translate: none !important; }
-}
+:root[data-motion="off"] [data-lift] { translate: none !important; }
 
 /* --------------------------------------------------------------------------
    31. Values row — heading beside the video
