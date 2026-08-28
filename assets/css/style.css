@@ -911,9 +911,13 @@ main > * {
   width: 100%;
   height: 100%;
   border-radius: 16px;
-  /* Lift the artwork out of the murk — the scenes are deliberately soft and
-     grainy at full size, which reads as dull at card scale. */
-  filter: saturate(1.1) contrast(1.04) brightness(1.04);
+  /* The scenes are deliberately soft and grainy at full size, which reads as
+     dull at card scale, so they are lifted — saturate 1.1, contrast 1.04,
+     brightness 1.04. That treatment is baked into the five club files rather
+     than applied here. A live filter on a layer whose scale changes every
+     frame makes the browser re-render it every frame, and ten of them (front
+     and back of five cards) is the most expensive thing on this stage. Bump
+     the version in images.js if the files are ever replaced. */
 }
 /* Clear through the top two-thirds, darkening only where the label sits, so
    the art stays legible instead of being flattened by an overall wash. */
@@ -971,8 +975,7 @@ main > * {
   position: absolute;
   inset: 0;
   /* No blur. The point of the back face is the photograph; a scrim below
-     carries the text contrast instead. */
-  filter: saturate(1.06);
+     carries the text contrast instead. No filter either — see above. */
   transform: scale(1.02);
   pointer-events: none;
   opacity: 1;

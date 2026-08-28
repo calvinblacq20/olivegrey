@@ -33,7 +33,7 @@
      replaced under the same name would otherwise keep showing the old picture.
      Bump it whenever a photograph or video is swapped, exactly like the ?v= on
      the stylesheet. */
-  var V = '?v=55';
+  var V = '?v=56';
 
   /* Photographs taken from the school's own site and served locally.
      Filenames prefixed by what they show, so a slot can be repointed at a

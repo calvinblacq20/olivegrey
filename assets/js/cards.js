@@ -21,6 +21,13 @@
      It stops only where there is no scripting at all. */
   var reduced = document.documentElement.getAttribute('data-motion') === 'off';
 
+  /* The back of a card is edge-on for a fraction of a second as it turns. On a
+     phone, rendering a second copy of the photograph there doubles the image
+     layers the compositor has to re-raster on every frame of the rotation —
+     for something nobody gets to look at. The woven band and the details carry
+     the back instead. */
+  var lightBacks = window.matchMedia('(pointer: coarse), (max-width: 1024px)').matches;
+
   /* Each card is a place on the campus rather than a payment card.
      `img` keys resolve against the manifest in images.js — change photos
      there, not here. `art` is the SVG illustration kept underneath as a
@@ -118,7 +125,7 @@
         // Back face — the same art, blurred, behind a woven band
         slices +=
           '<div class="card3d__layer card3d__face" style="transform:translateZ(' + z + 'px) rotateX(180deg)">' +
-            '<div class="card3d__blur">' + art(d) + '</div>' +
+            '<div class="card3d__blur">' + (lightBacks ? '' : art(d)) + '</div>' +
             '<div class="card3d__band"></div>' +
             '<div class="card3d__details">' +
               '<div class="card3d__cat">' + d.label + '</div>' +
