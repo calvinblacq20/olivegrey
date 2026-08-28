@@ -38,7 +38,9 @@
 
   var cards = [];
   var metrics = { cardW: 336, cardH: 211, stageH: 0 };
-  var progress = 0;
+  /* Starts mid-travel rather than parked square on a card, so the first
+     glance at the section already shows movement. */
+  var progress = 0.4;
   var mouse = { x: 0, y: 0, tx: 0, ty: 0 };
   var frame = 0;
 
@@ -170,11 +172,15 @@
     var h = metrics.stageH || window.innerHeight;
     var cardH = metrics.cardH;
 
-    // A non-linear step: the card dwells briefly at front centre, then
-    // accelerates away to the next one.
+    /* Very nearly linear, and deliberately so. A steeper curve parks the
+       card at front centre for over a second and then whips it away, which
+       reads as a carousel that is broken rather than one that is easing —
+       especially since progress only advances while the section is on
+       screen, so every arrival starts at the stillest point of the curve.
+       The exponent is kept just above 1 for a trace of ease, no more. */
     var rounded = Math.round(progress);
     var diff = progress - rounded;                       // [-0.5, 0.5]
-    var eased = Math.sign(diff) * Math.pow(Math.abs(diff) * 2, 2.6) / 2;
+    var eased = Math.sign(diff) * Math.pow(Math.abs(diff) * 2, 1.15) / 2;
     var active = rounded + eased;
     setNow(rounded);
 
@@ -261,7 +267,8 @@
      it happens a few times a second instead of sixty — the stage cannot
      leave the screen faster than that matters. */
   var visible = true;
-  var sampleIn = 0;
+  var sampledAt = -1e9;
+  var SAMPLE_EVERY = 250;   // milliseconds, not frames — see below
 
   function sampleVisibility() {
     var r = stage.getBoundingClientRect();
@@ -281,7 +288,12 @@
     last = now;
     beat = now;
 
-    if (--sampleIn <= 0) { sampleIn = 20; sampleVisibility(); }
+    /* Every 250ms, not every N frames. A frame count sounds equivalent and
+       is not: when the browser throttles this loop — which is precisely what
+       a phone does when it is already struggling — a count of twenty frames
+       stretches from a third of a second to twenty seconds, and the carousel
+       sits frozen long after it is back on screen. */
+    if (now - sampledAt >= SAMPLE_EVERY) { sampledAt = now; sampleVisibility(); }
     if (!visible) return;      // still turning over, just not doing the work
 
     progress += dt * RATE;
