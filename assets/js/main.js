@@ -835,7 +835,7 @@
   }
 
   /* ------------------------------------------------------------------------
-     11. Magnetic buttons + custom cursor
+     11. Magnetic buttons
      ------------------------------------------------------------------------ */
   var fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
@@ -853,26 +853,6 @@
         setTimeout(function () { el.style.transition = ''; }, 620);
       });
     });
-
-    var cursor = $('.cursor');
-    if (cursor) {
-      var cx = 0, cy = 0, tx = 0, ty = 0;
-      window.addEventListener('pointermove', function (e) {
-        tx = e.clientX; ty = e.clientY;
-        cursor.classList.add('is-active');
-      });
-      (function loop() {
-        cx += (tx - cx) * 0.16;
-        cy += (ty - cy) * 0.16;
-        cursor.style.transform = 'translate(' + cx + 'px, ' + cy + 'px) translate(-50%, -50%)';
-        requestAnimationFrame(loop);
-      })();
-      $$('a, button, .rail__track, [data-magnetic]').forEach(function (el) {
-        el.addEventListener('pointerenter', function () { cursor.classList.add('is-hover'); });
-        el.addEventListener('pointerleave', function () { cursor.classList.remove('is-hover'); });
-      });
-      document.addEventListener('pointerleave', function () { cursor.classList.remove('is-active'); });
-    }
   }
 
   /* ------------------------------------------------------------------------

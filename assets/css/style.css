@@ -1142,22 +1142,6 @@ main > * {
 .footer__base a:hover { color: var(--brand); }
 
 /* --------------------------------------------------------------------------
-   21. Cursor
-   -------------------------------------------------------------------------- */
-.cursor {
-  position: fixed; top: 0; left: 0;
-  width: 34px; height: 34px; border-radius: 50%;
-  border: 1px solid var(--brand);
-  pointer-events: none; z-index: 300;
-  transform: translate(-50%, -50%);
-  transition: width 0.35s var(--ease), height 0.35s var(--ease), background 0.35s ease, opacity 0.3s ease;
-  opacity: 0;
-}
-.cursor.is-active { opacity: 1; }
-.cursor.is-hover { width: 62px; height: 62px; background: rgba(228, 24, 36, 0.16); }
-@media (hover: none), (pointer: coarse) { .cursor { display: none; } }
-
-/* --------------------------------------------------------------------------
    22. Responsive
    -------------------------------------------------------------------------- */
 @media (max-width: 1024px) {
