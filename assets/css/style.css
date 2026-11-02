@@ -1644,3 +1644,71 @@ main > * {
     border-radius: 0;
   }
 }
+
+/* --------------------------------------------------------------------------
+   The shape of a day
+   -------------------------------------------------------------------------- */
+.daylist { list-style: none; margin: 0; padding: 0; max-width: 62rem; }
+.dayrow {
+  display: grid; grid-template-columns: 7.5rem 1fr; gap: clamp(1rem, 3vw, 2.5rem);
+  align-items: baseline; padding: clamp(1rem, 2vw, 1.5rem) 0;
+  border-top: 1px solid var(--line);
+}
+.dayrow:last-child { border-bottom: 1px solid var(--line); }
+.dayrow__time {
+  font-family: var(--display); font-size: clamp(1.25rem, 2.4vw, 1.9rem);
+  color: var(--brand); font-variant-numeric: tabular-nums; line-height: 1;
+}
+.dayrow__what b { display: block; font-weight: 500; font-size: var(--fs-h4); }
+.dayrow__what em {
+  display: block; font-style: normal; color: var(--muted);
+  font-size: var(--fs-sm); margin-top: .3rem; max-width: 56ch;
+}
+
+/* --------------------------------------------------------------------------
+   Every room has a name
+   -------------------------------------------------------------------------- */
+.rooms {
+  display: grid; gap: clamp(.75rem, 1.5vw, 1.1rem);
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  margin-top: clamp(2rem, 4vw, 3.5rem);
+}
+.room {
+  background: var(--paper); border-radius: var(--r-card);
+  padding: clamp(1.1rem, 2vw, 1.6rem);
+  box-shadow: 0 1px 2px rgba(36,31,31,.04), 0 18px 40px -30px rgba(36,31,31,.45);
+}
+.room__stage {
+  font-size: var(--fs-xs); letter-spacing: .18em; text-transform: uppercase;
+  color: var(--muted); margin: 0 0 .5rem;
+}
+.room__name {
+  font-family: var(--display); font-weight: 400;
+  font-size: clamp(1.15rem, 2vw, 1.5rem); line-height: 1.1; margin: 0;
+}
+/* A level with two streams names both, the second quietly. */
+.room__name span {
+  display: block; font-size: .72em; color: var(--muted); margin-top: .25rem;
+}
+.room__virtue {
+  margin: .9rem 0 0; font-size: var(--fs-sm); color: var(--brand);
+  letter-spacing: .06em; text-transform: uppercase;
+}
+
+/* --------------------------------------------------------------------------
+   Mission and vision
+   -------------------------------------------------------------------------- */
+.purpose {
+  display: grid; gap: clamp(2rem, 5vw, 4.5rem);
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+}
+.purpose__text {
+  font-family: var(--display); font-weight: 400;
+  font-size: clamp(1.15rem, 2.1vw, 1.7rem); line-height: 1.35;
+  margin: .9rem 0 0; max-width: 34ch; text-wrap: balance;
+}
+
+@media (max-width: 620px) {
+  .dayrow { grid-template-columns: 4.6rem 1fr; gap: 1rem; }
+  .dayrow__time { font-size: 1.05rem; }
+}
