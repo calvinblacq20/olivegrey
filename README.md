@@ -141,9 +141,20 @@ These look odd until you know why. Please don't "tidy" them:
 ## Before this goes live
 
 1. **Confirm the facts.** Everything on the page comes from the school's own
-   website. Fees, term dates, staff numbers, class sizes and room counts are
-   not published anywhere, so they are simply absent rather than guessed. Get
-   them from the school and fill the gaps.
+   website, or from photographs of its premises and paperwork: the signboard,
+   the fee sheet, the Arsenic 5(A) timetable, the term calendar and the office
+   door. The class names, the virtues on the doors, the shape of the school
+   day and the mission and vision are quoted from those, not paraphrased.
+
+   **Fees are now known but deliberately not on the page.** The sheet gives
+   registration, admission, termly tuition, lunch, breakfast, books and
+   uniform. Publishing them would qualify enquiries before they arrive, which
+   is worth doing — but it is a commercial decision for the school to make,
+   not one to make on their behalf.
+
+   **The iPrimary fee sheet is still missing**; the one photographed covers
+   Pre-School only. Staff numbers and class sizes remain unpublished and so
+   remain absent rather than guessed.
 2. **Resolve the collection time.** Their current site says 17:30 on one page
    and 18:00 on another. This site uses 18:00 throughout.
 3. **Wire the enquiry form.** `#enquiry` validates in the browser and shows a
